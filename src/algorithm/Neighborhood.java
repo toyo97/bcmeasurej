@@ -22,7 +22,7 @@ public class Neighborhood {
         return neigh;
     }
 
-    public static float neighborhoodMean(CellStack cs, int r1, int r0) {
+    public static float getMean(CellStack cs, int r1, int r0) {
         int index = 0;
         int total = 0;
         double r02 = r0 * r0;
