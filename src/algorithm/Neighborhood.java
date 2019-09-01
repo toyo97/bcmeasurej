@@ -1,9 +1,26 @@
 package algorithm;
 
 import ij.IJ;
+import java.util.ArrayList;
+
 import stack.CellStack;
 
+
 public class Neighborhood {
+
+    public static ArrayList<int[]> getNeighborhood3x3x3(int[] center) {
+        ArrayList<int[]> neigh = new ArrayList<>();
+
+        for (int dz = -1; dz < 2; dz++) {
+            for (int dy = -1; dy < 2; dy++) {
+                for (int dx = -1; dx < 2; dx++) {
+                    if (!(dx == 0 && dy == 0 && dz == 0))
+                        neigh.add(new int[] {center[0]+dx, center[1]+dy, center[2]+dz});
+                }
+            }
+        }
+        return neigh;
+    }
 
     public static float neighborhoodMean(CellStack cs, int r1, int r0) {
         int index = 0;
@@ -21,7 +38,6 @@ public class Neighborhood {
         int vx = (int) Math.ceil(r1);
         int vy = (int) Math.ceil(r1);
         int vz = (int) (Math.ceil(r1 / ratio));
-        double[] pix = new double[(2 * vx + 1) * (2 * vy + 1) * (2 * vz + 1)];
 
         for (int k = z - vz; k <= z + vz; k++) {
             for (int j = y - vy; j <= y + vy; j++) {
