@@ -1,5 +1,6 @@
 package stack;
 
+import algorithm.Neighborhood;
 import ij.ImagePlus;
 import geom.Box3D;
 import ij.ImageStack;
@@ -12,6 +13,7 @@ public class CellStack extends ImagePlus {
     private int[] seed; // seed is relative to the original image
     private int[] cellCenter; // cellCenter is relative to the stack.CellStack
     private double scaleZ;
+    private double[] rad3D = null;
 
     //  cube position in original image
     private Box3D box;
@@ -84,6 +86,28 @@ public class CellStack extends ImagePlus {
             this.setPosition(pos[2] + 1);
             return this.getPixel(pos[0], pos[1])[0];
         } else throw new Exception("Position " + Arrays.toString(pos) + " is outside cell stack");
+    }
+
+    public double[] getRadialDistribution3D(int maxRad) {
+        double[] tab = new double[maxRad];
+
+        if (rad3D == null) {
+            for (int r = 0; r < maxRad + 1; r++) {
+                double mean = Neighborhood.neighborhoodMean(this, r + 1, r);
+                tab[r] = mean;
+            }
+        }
+        else
+            tab = rad3D;
+        return tab;
+    }
+
+    public int getRadius(double thresh) {
+        int r = 0;
+        while (rad3D[r] >= thresh && r < rad3D.length - 1)
+            r++;
+
+        return r;
     }
 
     public int getDim() {
