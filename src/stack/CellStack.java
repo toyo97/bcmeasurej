@@ -4,7 +4,11 @@ import algorithm.Neighborhood;
 import ij.ImagePlus;
 import geom.Box3D;
 import ij.ImageStack;
+import mcib3d.geom.Voxel3D;
+import mcib3d.image3d.ImageHandler;
+import mcib3d.image3d.processing.MaximaFinder;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class CellStack extends ImagePlus {
@@ -93,7 +97,7 @@ public class CellStack extends ImagePlus {
 
         if (rad3D == null) {
             for (int r = 0; r < maxRad + 1; r++) {
-                double mean = Neighborhood.neighborhoodMean(this, r + 1, r);
+                double mean = Neighborhood.getMean(this, r + 1, r);
                 tab[r] = mean;
             }
         }
@@ -108,6 +112,60 @@ public class CellStack extends ImagePlus {
             r++;
 
         return r;
+    }
+
+    public int[] getLocalMaxPos() throws Exception {
+
+        int[] maxPos = cellCenter;
+        int maxValue = getVoxel(maxPos);
+
+        boolean newMaxFound = true;
+
+        while (newMaxFound) {
+            newMaxFound = false;
+            for (int[] pos : Neighborhood.getNeighborhood3x3x3(maxPos)) {
+                try {
+                    int v = getVoxel(pos);
+
+                    if (v > maxValue) {
+                        maxPos = pos;
+                        maxValue = v;
+                        newMaxFound = true;
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+        return maxPos;
+    }
+
+    public double getLocalMean(int r0, int r1, int r2, double weight) {
+        double mSpot = Neighborhood.getMean(this, r0, 0);
+        double mBack = Neighborhood.getMean(this, r2, r1);
+
+        return mSpot * weight + (1 - weight) * mBack;
+    }
+
+    public ArrayList<int[]> findMaxima(int radius, float thresh) {
+        ImageHandler imh = ImageHandler.wrap(this.duplicate());
+        int radZ = (int) (radius * getScaleZ());
+
+//        in MaximaFinder thresh is the noise tolerance value
+        MaximaFinder mf = new MaximaFinder(imh, radius, radZ, thresh);
+        ArrayList<Voxel3D> peaksVox = mf.getListPeaks();
+
+        ArrayList<int[]> peaks = new ArrayList<>();
+        for (Voxel3D peak : peaksVox) {
+            if (peak.getValue() >= thresh) {
+                double[] doubles = peak.getPosition().getArray();
+                int[] ints = new int[3];
+                for (int i = 0; i < 3; i++) {
+                    ints[i] = (int) doubles[i];
+                }
+                peaks.add(ints);
+            }
+        }
+        peaks.add(cellCenter);
+        return peaks;
     }
 
     public int getDim() {
