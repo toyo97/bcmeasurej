@@ -13,10 +13,10 @@ public class MeanShift {
     private CellStack cellStack;
     private int radius;
     private ArrayList<int[]> peaks;
-    private float sigma;  // Gaussian kernel parameter
-    private float thresh;
+    private double sigma;  // Gaussian kernel parameter
+    private double thresh;
 
-    public MeanShift(CellStack cellStack, int radius, ArrayList<int[]> peaks, float sigma, float thresh) {
+    public MeanShift(CellStack cellStack, int radius, ArrayList<int[]> peaks, double sigma, double thresh) {
         this.cellStack = cellStack;
         this.radius = radius;
         this.peaks = peaks;
