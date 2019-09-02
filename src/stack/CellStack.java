@@ -1,15 +1,17 @@
 package stack;
 
-import algorithm.Neighborhood;
 import ij.ImagePlus;
-import geom.Box3D;
 import ij.ImageStack;
+import ij.measure.Calibration;
 import mcib3d.geom.Voxel3D;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.processing.MaximaFinder;
-
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import geom.Box3D;
+import algorithm.Neighborhood;
+
 
 public class CellStack extends ImagePlus {
 
@@ -17,7 +19,6 @@ public class CellStack extends ImagePlus {
     private int[] seed; // seed is relative to the original image
     private int[] cellCenter; // cellCenter is relative to the stack.CellStack
     private double scaleZ;
-    private double[] rad3D = null;
 
     //  cube position in original image
     private Box3D box;
@@ -92,22 +93,25 @@ public class CellStack extends ImagePlus {
         } else throw new Exception("Position " + Arrays.toString(pos) + " is outside cell stack");
     }
 
-    public double[] getRadialDistribution3D(int maxRad) {
-        double[] tab = new double[maxRad];
+    public void setCalibration() {
+        Calibration cal = this.getCalibration();
+        cal.pixelDepth = 1 / this.getScaleZ();
+    }
 
-        if (rad3D == null) {
-            for (int r = 0; r < maxRad + 1; r++) {
-                double mean = Neighborhood.getMean(this, r + 1, r);
-                tab[r] = mean;
-            }
+    public double[] computeRadialDistribution3D(int maxRad) {
+        double[] tab = new double[maxRad + 1];
+
+        for (int r = 0; r < maxRad + 1; r++) {
+            double mean = Neighborhood.getMean(this, r + 1, r);
+            tab[r] = mean;
         }
-        else
-            tab = rad3D;
+
         return tab;
     }
 
-    public int getRadius(double thresh) {
+    public int computeCellRadius(double thresh, int maxRad) {
         int r = 0;
+        double[] rad3D = computeRadialDistribution3D(maxRad);
         while (rad3D[r] >= thresh && r < rad3D.length - 1)
             r++;
 
@@ -132,7 +136,8 @@ public class CellStack extends ImagePlus {
                         maxValue = v;
                         newMaxFound = true;
                     }
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
             }
         }
         return maxPos;
@@ -166,6 +171,18 @@ public class CellStack extends ImagePlus {
         }
         peaks.add(cellCenter);
         return peaks;
+    }
+
+    public static ArrayList<CellStack> getCellStacksFromSeeds(ImagePlus imp, ArrayList<int[]> seeds, int dim, double scaleZ) {
+        ArrayList<CellStack> cellStacks = new ArrayList<>();
+        for (int[] seed : seeds) {
+            cellStacks.add(new CellStack(imp, seed, dim, scaleZ));
+        }
+        return cellStacks;
+    }
+
+    public boolean isOnBorder() {
+        return dim != box.getWidth() || dim != box.getHeight() || dim * scaleZ != box.getDepth();
     }
 
     public int getDim() {
