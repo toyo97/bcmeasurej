@@ -1,3 +1,4 @@
+import algorithm.Neighborhood;
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
@@ -51,19 +52,21 @@ public class Main {
 
     //  display params
     private static final boolean CIRCLE_ROI = true;
-    private static final boolean DISCARD_MARGIN_CELLS = false;
+    private static final boolean DISCARD_MARGIN_CELLS = true;
+    private static final boolean DEBUG = true;
 
 
     public static void main(String[] args) {
         //  open imagej frame
         ImageJ imageJ = new ImageJ();
 
-//        try {
-//            fullProcess();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-        processImg("/home/zemp/bcfind_GT/SST_11_14.tif");
+        try {
+            fullProcess();
+            System.out.println("Done");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+//        processImg("/home/zemp/bcfind_GT/SST_11_14.tif");
 
     }
 
@@ -121,6 +124,20 @@ public class Main {
                 try {
                     processCell(cellStack);
 
+                    //  apply a different LUT for display
+                    if (!COLOR_MAP.equals("default"))
+                        Display.applyLUT(cellStack, COLOR_MAP);
+
+                    cellStack.setSlice(cellStack.getCellCenter()[2] + 1);
+
+                    if (CIRCLE_ROI)
+                        Display.circleRoi(cellStack, cellStack.getRadius(), Color.RED);
+
+                    //  show cell in a particular area of the display for better visualization
+                    cellStack.show();
+                    ImageWindow w = cellStack.getWindow();
+                    w.setLocationAndSize(1550, 400, 300, 300);
+
                     Scanner keyboard = new Scanner(System.in);
                     System.out.println("Press enter to process the next cell or type n to skip to the next image");
                     String c = keyboard.nextLine();
@@ -135,7 +152,7 @@ public class Main {
 
                 } catch (Exception e) {
                     e.printStackTrace();
-                    IJ.error("Skipped cell " + Arrays.toString(cellStack.getCellCenter()));
+                    IJ.error("Skipped cell " + Arrays.toString(cellStack.getCellCenter()) + ", reason: " + e.getMessage());
                 }
             }
         }
@@ -174,20 +191,9 @@ public class Main {
 
         int newRadius = cellStack.computeCellRadius(newLocalMean, MAX_RADIUS);
         IJ.log("New radius: " + newRadius);
-
-        //  apply a different LUT for display
-        if (!COLOR_MAP.equals("default"))
-            Display.applyLUT(cellStack, COLOR_MAP);
-
-        cellStack.setSlice(cellStack.getCellCenter()[2] + 1);
-
-        if (CIRCLE_ROI)
-            Display.circleRoi(cellStack, newRadius, Color.RED);
-
-        //  show cell in a particular area of the display for better visualization
-        cellStack.show();
-        ImageWindow w = cellStack.getWindow();
-        w.setLocationAndSize(1550, 400, 300, 300);
+        cellStack.setRadius(newRadius);
+        System.out.println("Density: " + cellStack.computeDensity(0));
+        System.out.println("Density mean: " + Neighborhood.getMean(cellStack, newRadius, 0));
     }
 
 }
