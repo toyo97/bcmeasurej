@@ -212,7 +212,11 @@ public class CellStack extends ImagePlus {
      * @return False if the two opposite vertices of the cube circumscribed to the sphere containing the cell
      */
     public boolean isOnBorder() {
-        return dim != box.getWidth() || dim != box.getHeight() || dim * scaleZ != box.getDepth();
+        int[] vertex1 = new int[] {cellCenter[0] - radius/2, cellCenter[1] - radius/2, cellCenter[2] - (int) (radius*scaleZ/2)};
+        int[] vertex2 = new int[] {cellCenter[0] + radius/2, cellCenter[1] + radius/2, cellCenter[2] + (int) (radius*scaleZ/2)};
+        boolean expr1 = contains(vertex1);
+        boolean expr2 = contains(vertex2);
+        return !(expr1 && expr2);
     }
 
     public int getDim() {
