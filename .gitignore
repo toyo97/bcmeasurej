@@ -1,2 +1,10 @@
 /bcmeasurej.iml
 /.idea/
+/src/algorithm/MeanShift.class
+/src/algorithm/Neighborhood.class
+/src/utils/Display.class
+/src/utils/Filter.class
+/src/utils/Marker.class
+/src/Main.class
+/src/geom/Box3D.class
+/src/stack/CellStack.class

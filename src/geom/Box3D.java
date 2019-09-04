@@ -27,11 +27,11 @@ public class Box3D {
     public Box3D(int[] center, int dim, double scaleZ, int maxW, int maxH, int maxD) {
         this.x0 = Math.max(center[0] - dim / 2, 0);
         this.y0 = Math.max(center[1] - dim / 2, 0);
-        this.z0 = Math.max(center[2] - dim / 2, 0);
+        this.z0 = Math.max(center[2] - (int) (dim * scaleZ / 2), 0);
 
         int x1 = Math.min(center[0] + dim / 2, maxW);
         int y1 = Math.min(center[1] + dim / 2, maxH);
-        int z1 = Math.min(center[2] + dim / 2, maxD);
+        int z1 = Math.min(center[2] + (int) (dim * scaleZ / 2), maxD);
 
         this.width = x1 - this.x0;
         this.height = y1 - this.y0;
