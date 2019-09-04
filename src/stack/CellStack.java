@@ -8,6 +8,7 @@ import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.processing.MaximaFinder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import geom.Box3D;
 import algorithm.Neighborhood;
@@ -217,6 +218,16 @@ public class CellStack extends ImagePlus {
         boolean expr1 = contains(vertex1);
         boolean expr2 = contains(vertex2);
         return !(expr1 && expr2);
+    }
+
+    public List<String> getData() {
+        List<String> row = new ArrayList<>();
+        int[] absoluteCenter = getAbsoluteCenter();
+        row.add(Integer.toString(absoluteCenter[0]));
+        row.add(Integer.toString(absoluteCenter[1]));
+        row.add(Integer.toString(absoluteCenter[2]));
+        row.add(Integer.toString(radius));
+        return row;
     }
 
     public int getDim() {
