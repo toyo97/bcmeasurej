@@ -16,15 +16,18 @@ import stack.CellStack;
 
 public class Display {
 
-    public static void applyLUT(CellStack cellStack, String colorMap) throws IOException {
+    public static void applyLUT(CellStack cellStack, String colorMap) {
         StackStatistics stats = new StackStatistics(cellStack);
 
         if (colorMap.equals("fire")) {
+            try {
+                IndexColorModel colorModel = LutLoader.open("luts/fire.lut");
 
-            IndexColorModel colorModel = LutLoader.open("luts/fire.lut");
-
-            LUT lut = new LUT(colorModel, stats.min, stats.max);
-            cellStack.setLut(lut);
+                LUT lut = new LUT(colorModel, stats.min, stats.max);
+                cellStack.setLut(lut);
+            } catch (IOException e) {
+                IJ.error("Cannot open LUT file\nDefault LUT applied");
+            }
         }
         else
             IJ.error("Invalid color map " + colorMap + "\nDefault LUT applied");
