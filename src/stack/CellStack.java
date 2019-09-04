@@ -20,6 +20,9 @@ public class CellStack extends ImagePlus {
     private int[] cellCenter; // cellCenter is relative to the stack.CellStack
     private double scaleZ;
 
+    private int radius = 35; //  default value, maximum radius in 70x70x70 box
+    private double density;
+
     //  cube position in original image
     private Box3D box;
 
@@ -68,6 +71,10 @@ public class CellStack extends ImagePlus {
         return new int[]{absCenter[0] - box.getX0(), absCenter[1] - box.getY0(), absCenter[2] - box.getZ0()};
     }
 
+    public int[] getAbsoluteCenter() {
+        return new int[] {box.getX0() + cellCenter[0], box.getY0() + cellCenter[1], box.getZ0() + cellCenter[2]};
+    }
+
     /**
      * Method to check if a point is inside the stack.CellStack
      *
@@ -114,6 +121,8 @@ public class CellStack extends ImagePlus {
         double[] rad3D = computeRadialDistribution3D(maxRad);
         while (rad3D[r] >= thresh && r < rad3D.length - 1)
             r++;
+
+        radius = r;
 
         return r;
     }
@@ -181,6 +190,27 @@ public class CellStack extends ImagePlus {
         return cellStacks;
     }
 
+    public double computeDensity(double thresh) {
+        //  formula of spheroid volume
+        ImageHandler imh = ImageHandler.wrap(this);
+
+        double volume = 4/3. * Math.PI * Math.pow(radius, 3) * scaleZ;
+        int total = 0;
+        int[] values = imh.getNeighborhoodSphere(cellCenter[0], cellCenter[1], cellCenter[2], radius, radius, (float) (radius*scaleZ)).getArrayInt();
+        for (int i = 0; i < values.length; i++) {
+            if (values[i] >= thresh)
+                total += values[i];
+        }
+
+        density = total/volume;
+        return density;
+    }
+
+    /**
+     * Handy method to check if the cell is entirely inside the stack volume
+     *
+     * @return False if the two opposite vertices of the cube circumscribed to the sphere containing the cell
+     */
     public boolean isOnBorder() {
         return dim != box.getWidth() || dim != box.getHeight() || dim * scaleZ != box.getDepth();
     }
@@ -207,5 +237,13 @@ public class CellStack extends ImagePlus {
 
     public void setCellCenter(int[] cellCenter) {
         this.cellCenter = cellCenter;
+    }
+
+    public int getRadius() {
+        return radius;
+    }
+
+    public void setRadius(int radius) {
+        this.radius = radius;
     }
 }
