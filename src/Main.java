@@ -3,6 +3,7 @@ import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
 import ij.gui.ImageWindow;
+
 import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ij.gui.PointRoi;
+import org.apache.batik.bridge.Mark;
 import org.apache.commons.io.FilenameUtils;
 
 import algorithm.MeanShift;
@@ -30,6 +32,7 @@ public class Main {
     private static final String SOURCE_DIR = "/home/zemp/bcfind_GT";
     private static final int CUBE_DIM = 70;  // dim of cube as region of interest (ROI) around every cell center
     private static final double SCALE_Z = 0.4;  // approx proportion with xy axis, equals to resZ/resXY
+    private static final boolean INVERT_Y = true;
 
     //  localMean params
     private static final int R0 = 13;
@@ -75,17 +78,18 @@ public class Main {
             List<String> files = paths
                     .filter(Files::isRegularFile)
                     .filter(p -> p.getFileName().toString().toLowerCase().endsWith(".marker"))
+                    .filter(p -> !(p.getFileName().toString().contains("[RAD]")))
                     .map(Path::toString)
                     .map(FilenameUtils::removeExtension)
                     .collect(Collectors.toList());
             for (String filePath : files) {
                 processImg(filePath);
 
-                Scanner keyboard = new Scanner(System.in);
-                System.out.println("Press enter to process the next image...\n");
-                String c = keyboard.nextLine();
-
-                IJ.run("Close All");
+//                Scanner keyboard = new Scanner(System.in);
+//                System.out.println("Press enter to process the next image...\n");
+//                String c = keyboard.nextLine();
+//
+//                IJ.run("Close All");
             }
         }
     }
@@ -95,66 +99,77 @@ public class Main {
 
         //  open image
         ImagePlus imp = IJ.openImage(imgPath);
-        imp.show();
-        ImageWindow bigW = imp.getWindow();
-        bigW.setLocationAndSize(1050, 400, 500, 500);
+//        imp.show();
+//        ImageWindow bigW = imp.getWindow();
+//        bigW.setLocationAndSize(1050, 400, 500, 500);
 
         //  read relative csv file rows (coordinates of centers)
         String markerPath = imgPath + ".marker";
         ArrayList<int[]> seeds = new ArrayList<>();
         try {
-            seeds = Marker.readMarker(markerPath, imp.getHeight());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            if (INVERT_Y)
+                seeds = Marker.readMarker(markerPath, imp.getHeight());
+            else
+                seeds = Marker.readMarker(markerPath);
 
-        for (CellStack cellStack : CellStack.getCellStacksFromSeeds(imp, seeds, CUBE_DIM, SCALE_Z)) {
+            ArrayList<List<String>> rows = new ArrayList<>();
 
-            //  identify cell in original image
-            imp.setSlice(cellStack.getSeed()[2] + 1);
-            PointRoi point = new PointRoi(cellStack.getSeed()[0], cellStack.getSeed()[1]);
-            point.setSize(3);
-            point.setStrokeColor(Color.RED);
-            imp.setRoi(point);
+            for (CellStack cellStack : CellStack.getCellStacksFromSeeds(imp, seeds, CUBE_DIM, SCALE_Z)) {
 
-            if (cellStack.isOnBorder() && DISCARD_MARGIN_CELLS) {
-                IJ.log("Skipped on border cell " + Arrays.toString(cellStack.getCellCenter()));
-            }
-            else {
-                try {
-                    processCell(cellStack);
+                //  identify cell in original image
+                imp.setSlice(cellStack.getSeed()[2] + 1);
+                PointRoi point = new PointRoi(cellStack.getSeed()[0], cellStack.getSeed()[1]);
+                point.setSize(3);
+                point.setStrokeColor(Color.RED);
+                imp.setRoi(point);
 
-                    //  apply a different LUT for display
-                    if (!COLOR_MAP.equals("default"))
-                        Display.applyLUT(cellStack, COLOR_MAP);
+                if (cellStack.isOnBorder() && DISCARD_MARGIN_CELLS) {
+                    IJ.log("Skipped on border cell " + Arrays.toString(cellStack.getCellCenter()));
+                } else {
+                    try {
+                        processCell(cellStack);
 
-                    cellStack.setSlice(cellStack.getCellCenter()[2] + 1);
+                        rows.add(cellStack.getData());
 
-                    if (CIRCLE_ROI)
-                        Display.circleRoi(cellStack, cellStack.getRadius(), Color.RED);
+//                    //  apply a different LUT for display
+//                    if (!COLOR_MAP.equals("default"))
+//                        Display.applyLUT(cellStack, COLOR_MAP);
+//
+//                    cellStack.setSlice(cellStack.getCellCenter()[2] + 1);
+//
+//                    if (CIRCLE_ROI)
+//                        Display.circleRoi(cellStack, cellStack.getRadius(), Color.RED);
+//
+//                    //  show cell in a particular area of the display for better visualization
+//                    cellStack.show();
+//                    ImageWindow w = cellStack.getWindow();
+//                    w.setLocationAndSize(1550, 400, 300, 300);
+//
+//                    Scanner keyboard = new Scanner(System.in);
+//                    System.out.println("Press enter to process the next cell or type n to skip to the next image");
+//                    String c = keyboard.nextLine();
+//
+//                    cellStack.close();
+//
+//                    //  type 1 to pass to the next image and skip the remaining cells
+//                    if (c .equals("n")) {
+//                        IJ.log("Skipped remaining cells...");
+//                        break;
+//                    }
 
-                    //  show cell in a particular area of the display for better visualization
-                    cellStack.show();
-                    ImageWindow w = cellStack.getWindow();
-                    w.setLocationAndSize(1550, 400, 300, 300);
-
-                    Scanner keyboard = new Scanner(System.in);
-                    System.out.println("Press enter to process the next cell or type n to skip to the next image");
-                    String c = keyboard.nextLine();
-
-                    cellStack.close();
-
-                    //  type 1 to pass to the next image and skip the remaining cells
-                    if (c .equals("n")) {
-                        IJ.log("Skipped remaining cells...");
-                        break;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        IJ.error("Skipped cell " + Arrays.toString(cellStack.getCellCenter()) + ", reason: " + e.getMessage());
                     }
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    IJ.error("Skipped cell " + Arrays.toString(cellStack.getCellCenter()) + ", reason: " + e.getMessage());
                 }
             }
+
+            String outMarkerPath = imgPath + "[RAD].marker";
+            Marker.writeMarker(outMarkerPath, rows);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            IJ.log("Error with marker " + markerPath + "\nSkipped");
         }
     }
 
@@ -178,7 +193,7 @@ public class Main {
         int radius = cellStack.computeCellRadius(localMean, MAX_RADIUS);
         IJ.log("First radius: " + radius);
 
-        ArrayList<int[]> peaks = cellStack.findMaxima(radius/2, (float) localMean);
+        ArrayList<int[]> peaks = cellStack.findMaxima(radius / 2, (float) localMean);
 
         IJ.log("Applying mean shift with peaks found...");
         MeanShift ms = new MeanShift(cellStack, radius, peaks, MS_SIGMA, localMean);
@@ -192,8 +207,7 @@ public class Main {
         int newRadius = cellStack.computeCellRadius(newLocalMean, MAX_RADIUS);
         IJ.log("New radius: " + newRadius);
         cellStack.setRadius(newRadius);
-        System.out.println("Density: " + cellStack.computeDensity(0));
-        System.out.println("Density mean: " + Neighborhood.getMean(cellStack, newRadius, 0));
+        //  TODO use computeDensity and save cell
     }
 
 }
