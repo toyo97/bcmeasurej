@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ij.gui.PointRoi;
-import org.apache.batik.bridge.Mark;
 import org.apache.commons.io.FilenameUtils;
 
 import algorithm.MeanShift;
@@ -25,6 +24,7 @@ import stack.CellStack;
 import utils.Display;
 import utils.Filter;
 import utils.Marker;
+import me.tongfei.progressbar.*;
 
 
 public class Main {
@@ -81,8 +81,12 @@ public class Main {
                     .filter(p -> !(p.getFileName().toString().contains("[RAD]")))
                     .map(Path::toString)
                     .map(FilenameUtils::removeExtension)
+                    .sorted()
                     .collect(Collectors.toList());
+
+            int count = 0;
             for (String filePath : files) {
+                System.out.print("\r\r"+(++count) + "/" + files.size() + " images\n");
                 processImg(filePath);
 
 //                Scanner keyboard = new Scanner(System.in);
@@ -114,14 +118,17 @@ public class Main {
 
             ArrayList<List<String>> rows = new ArrayList<>();
 
+            //  FIXME buggy progress bar display
+            ProgressBar pb = new ProgressBar("Cells", seeds.size(), ProgressBarStyle.ASCII);
+            pb.setExtraMessage(Paths.get(imgPath).getFileName().toString());
             for (CellStack cellStack : CellStack.getCellStacksFromSeeds(imp, seeds, CUBE_DIM, SCALE_Z)) {
 
-                //  identify cell in original image
-                imp.setSlice(cellStack.getSeed()[2] + 1);
-                PointRoi point = new PointRoi(cellStack.getSeed()[0], cellStack.getSeed()[1]);
-                point.setSize(3);
-                point.setStrokeColor(Color.RED);
-                imp.setRoi(point);
+//                //  identify cell in original image
+//                imp.setSlice(cellStack.getSeed()[2] + 1);
+//                PointRoi point = new PointRoi(cellStack.getSeed()[0], cellStack.getSeed()[1]);
+//                point.setSize(3);
+//                point.setStrokeColor(Color.RED);
+//                imp.setRoi(point);
 
                 if (cellStack.isOnBorder() && DISCARD_MARGIN_CELLS) {
                     IJ.log("Skipped on border cell " + Arrays.toString(cellStack.getCellCenter()));
@@ -162,6 +169,7 @@ public class Main {
                         IJ.error("Skipped cell " + Arrays.toString(cellStack.getCellCenter()) + ", reason: " + e.getMessage());
                     }
                 }
+                pb.step();
             }
 
             String outMarkerPath = imgPath + "[RAD].marker";
