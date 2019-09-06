@@ -50,7 +50,7 @@ public class Main {
     private static final double MS_SIGMA = 10;
 
     //  Look-Up-Table (alternatives: fire, default)
-    private static final String COLOR_MAP = "fire";
+    private static final String COLOR_MAP = "default";
 
     //  display params
     private static final boolean CIRCLE_ROI = true;
@@ -73,7 +73,9 @@ public class Main {
                 for (int i = 0; i < cellPreviews.size(); i++) {
                     System.out.println(cellPreviews.get(i).getTitle() + " density: " + cellPreviews.get(i).density);
                 }
-                cellPreviews.get(0).show();
+//                cellPreviews.get(0).show();
+                Montage montage = new Montage(cellPreviews);
+                montage.show();
             }
 
             System.out.println("Done");
