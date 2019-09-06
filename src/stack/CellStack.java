@@ -6,12 +6,15 @@ import ij.measure.Calibration;
 import mcib3d.geom.Voxel3D;
 import mcib3d.image3d.ImageHandler;
 import mcib3d.image3d.processing.MaximaFinder;
+
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import geom.Box3D;
 import algorithm.Neighborhood;
+import utils.CellPreview;
 
 
 public class CellStack extends ImagePlus {
@@ -228,6 +231,15 @@ public class CellStack extends ImagePlus {
         row.add(Integer.toString(absoluteCenter[2]));
         row.add(Integer.toString(radius));
         return row;
+    }
+
+    public CellPreview savePreview() {
+        CellPreview cellPreview = new CellPreview(this.getTitle(),
+                                                this.getImageStack().getProcessor(this.cellCenter[2]+1),
+                                                this.density);
+        cellPreview.getProcessor().setColor(Color.GREEN);
+        cellPreview.getProcessor().drawOval(cellCenter[0] - radius, cellCenter[1] - radius, radius*2, radius*2);
+        return cellPreview;
     }
 
     public int getDim() {

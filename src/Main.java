@@ -22,15 +22,13 @@ import org.apache.commons.io.FilenameUtils;
 
 import algorithm.MeanShift;
 import stack.CellStack;
-import utils.Display;
-import utils.Filter;
-import utils.Marker;
-import utils.Progress;
+import utils.*;
 
 
 public class Main {
 
-    private static final String SOURCE_DIR = "/home/zemp/bcfind_GT";
+    //  "/home/zemp/bcfind_GT"
+    private static final String SOURCE_DIR = "/home/zemp/IdeaProjects/bcmeasurej/testbatch";
     private static final int CUBE_DIM = 70;  // dim of cube as region of interest (ROI) around every cell center
     private static final double SCALE_Z = 0.4;  // approx proportion with xy axis, equals to resZ/resXY
     private static final boolean INVERT_Y = true;
@@ -60,6 +58,7 @@ public class Main {
     private static final boolean DEBUG = true;
 
     private static Progress progress;
+    private static ArrayList<CellPreview> cellPreviews = new ArrayList<>();
 
 
     public static void main(String[] args) {
@@ -68,6 +67,15 @@ public class Main {
 
         try {
             fullProcess();
+
+            if (DEBUG) {
+                System.out.println("DEBUG: Loading previews");
+                for (int i = 0; i < cellPreviews.size(); i++) {
+                    System.out.println(cellPreviews.get(i).getTitle() + " density: " + cellPreviews.get(i).density);
+                }
+                cellPreviews.get(0).show();
+            }
+
             System.out.println("Done");
         } catch (IOException e) {
             e.printStackTrace();
@@ -153,9 +161,15 @@ public class Main {
 
                         rows.add(cellStack.getData());
 
-//                    //  apply a different LUT for display
-//                    if (!COLOR_MAP.equals("default"))
-//                        Display.applyLUT(cellStack, COLOR_MAP);
+                        //  apply a different LUT for display
+                        if (!COLOR_MAP.equals("default"))
+                            Display.applyLUT(cellStack, COLOR_MAP);
+
+                        if (DEBUG) {
+                            cellPreviews.add(cellStack.savePreview());
+                        }
+
+//
 //
 //                    cellStack.setSlice(cellStack.getCellCenter()[2] + 1);
 //
@@ -232,7 +246,7 @@ public class Main {
         int newRadius = cellStack.computeCellRadius(newLocalMean, MAX_RADIUS);
         IJ.log("New radius: " + newRadius);
         cellStack.setRadius(newRadius);
-        //  TODO use computeDensity and save cell
+        cellStack.computeDensity(newLocalMean);
     }
 
 }
