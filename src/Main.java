@@ -7,6 +7,7 @@ import ij.gui.ImageWindow;
 import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ import stack.CellStack;
 import utils.Display;
 import utils.Filter;
 import utils.Marker;
-import me.tongfei.progressbar.*;
+import utils.Progress;
 
 
 public class Main {
@@ -58,6 +59,8 @@ public class Main {
     private static final boolean DISCARD_MARGIN_CELLS = true;
     private static final boolean DEBUG = true;
 
+    private static Progress progress;
+
 
     public static void main(String[] args) {
         //  open imagej frame
@@ -84,17 +87,29 @@ public class Main {
                     .sorted()
                     .collect(Collectors.toList());
 
-            int count = 0;
+            progress = new Progress(files.size());
             for (String filePath : files) {
-                System.out.print("\r\r"+(++count) + "/" + files.size() + " images\n");
-                processImg(filePath);
+                try {
+                    progress.stepImg();
+
+                    processImg(filePath);
 
 //                Scanner keyboard = new Scanner(System.in);
 //                System.out.println("Press enter to process the next image...\n");
 //                String c = keyboard.nextLine();
 //
 //                IJ.run("Close All");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    IJ.log(e.getMessage());
+                }
             }
+        } catch (NoSuchFileException nsfe) {
+            nsfe.printStackTrace();
+            IJ.log("Source dir '" + nsfe.getMessage() + "' not valid");
+        } catch (Exception e) {
+            e.printStackTrace();
+            IJ.log("Unknown error, please check stack trace");
         }
     }
 
@@ -109,7 +124,7 @@ public class Main {
 
         //  read relative csv file rows (coordinates of centers)
         String markerPath = imgPath + ".marker";
-        ArrayList<int[]> seeds = new ArrayList<>();
+        ArrayList<int[]> seeds;
         try {
             if (INVERT_Y)
                 seeds = Marker.readMarker(markerPath, imp.getHeight());
@@ -118,10 +133,10 @@ public class Main {
 
             ArrayList<List<String>> rows = new ArrayList<>();
 
-            //  FIXME buggy progress bar display
-            ProgressBar pb = new ProgressBar("Cells", seeds.size(), ProgressBarStyle.ASCII);
-            pb.setExtraMessage(Paths.get(imgPath).getFileName().toString());
+            progress.resetCellCount(seeds.size(), Paths.get(imgPath).getFileName().toString());
             for (CellStack cellStack : CellStack.getCellStacksFromSeeds(imp, seeds, CUBE_DIM, SCALE_Z)) {
+                progress.stepCell();
+                progress.show();
 
 //                //  identify cell in original image
 //                imp.setSlice(cellStack.getSeed()[2] + 1);
@@ -169,7 +184,6 @@ public class Main {
                         IJ.error("Skipped cell " + Arrays.toString(cellStack.getCellCenter()) + ", reason: " + e.getMessage());
                     }
                 }
-                pb.step();
             }
 
             String outMarkerPath = imgPath + "[RAD].marker";
@@ -178,6 +192,9 @@ public class Main {
         } catch (IOException e) {
             e.printStackTrace();
             IJ.log("Error with marker " + markerPath + "\nSkipped");
+        } catch (NullPointerException npe) {
+            npe.printStackTrace();
+            IJ.log("Invalid img path: " + imgPath);
         }
     }
 
