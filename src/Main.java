@@ -33,11 +33,11 @@ public class Main {
     //  localMean params
     private static final int R0 = 13;
     private static final int R1 = 18;
-    private static final int R2 = 45;
-    private static final double MEAN_WEIGHT = 0.3;  // 0.5 perfect balance, less than 0.5 gives more weight to background values
+    private static final int R2 = 40;
+    private static final double MEAN_WEIGHT = 0.4;  // 0.5 perfect balance, less than 0.5 gives more weight to background values
 
     //  filter params
-    private static final String FILTER = "gauss";
+    private static final String FILTER = "none";
     private static final float FILTER_SIGMA = 2f;
 
     //  3d radial distribution params
@@ -66,9 +66,6 @@ public class Main {
 
             if (DEBUG) {
                 System.out.println("DEBUG: Loading previews");
-                for (int i = 0; i < cellPreviews.size(); i++) {
-                    System.out.println(cellPreviews.get(i).getTitle() + " density: " + cellPreviews.get(i).density);
-                }
                 Montage.showRandomMontages(cellPreviews);
             }
 
@@ -196,7 +193,7 @@ public class Main {
         cellStack.setCellCenter(centroid);
         IJ.log("- New center: " + Arrays.toString(centroid));
 
-        double newLocalMean = cellStack.getLocalMean(radius - 2, radius + 4, R2, MEAN_WEIGHT);
+        double newLocalMean = cellStack.getLocalMean(radius - 3, radius + 3, radius + 23, MEAN_WEIGHT);
 
         int newRadius = cellStack.computeCellRadius(newLocalMean, MAX_RADIUS);
         IJ.log("- New radius: " + newRadius);
