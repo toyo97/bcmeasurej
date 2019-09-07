@@ -76,7 +76,7 @@ public class CellStack extends ImagePlus {
     }
 
     public int[] getAbsoluteCenter() {
-        return new int[] {box.getX0() + cellCenter[0], box.getY0() + cellCenter[1], box.getZ0() + cellCenter[2]};
+        return new int[]{box.getX0() + cellCenter[0], box.getY0() + cellCenter[1], box.getZ0() + cellCenter[2]};
     }
 
     /**
@@ -104,22 +104,40 @@ public class CellStack extends ImagePlus {
         } else throw new Exception("Position " + Arrays.toString(pos) + " is outside cell stack");
     }
 
+    /**
+     * Set pixel depth value according to default value scaleZ
+     * NOTE: to be clear, pixelDepth >= 1, scaleZ <= 1 (the latter is the proportion resZ/resXY -res := resolution-)
+     */
     public void setCalibration() {
         Calibration cal = this.getCalibration();
         cal.pixelDepth = 1 / this.getScaleZ();
     }
 
+    /**
+     * Compute the 3D radial distribution in the given radius
+     * Reference https://github.com/mcib3d/mcib3d-core/blob/master/src/main/java/mcib3d/image3d/ImageHandler.java
+     *
+     * @param maxRad maximum radius computed
+     * @return values of (half) the gaussian in list of length maxRad+1
+     */
     public double[] computeRadialDistribution3D(int maxRad) {
         double[] tab = new double[maxRad + 1];
 
         for (int r = 0; r < maxRad + 1; r++) {
-            double mean = Neighborhood.getMean(this, r + 1, r);
+            double mean = Neighborhood.getMean(this, r, r + 1);
             tab[r] = mean;
         }
 
         return tab;
     }
 
+    /**
+     * Find the radius of the cell from the 3D radial distribution counting the values above the given threshold
+     *
+     * @param thresh threshold value to give to computeRadialDistribution 3D
+     * @param maxRad maximum radius computed
+     * @return radius of the cell
+     */
     public int computeCellRadius(double thresh, int maxRad) {
         int r = 0;
         double[] rad3D = computeRadialDistribution3D(maxRad);
@@ -131,6 +149,12 @@ public class CellStack extends ImagePlus {
         return r;
     }
 
+    /**
+     * Simply finds the local maximum oround the current cell center
+     *
+     * @return 3D coordinates of the local max found in the stack
+     * @throws Exception if cellCenter coordinates are wrong (it should always be inside the CellStack)
+     */
     public int[] getLocalMaxPos() throws Exception {
 
         int[] maxPos = cellCenter;
@@ -156,13 +180,30 @@ public class CellStack extends ImagePlus {
         return maxPos;
     }
 
+    /**
+     * Calculate a threshold value computing the center/background mean and weighting the sum
+     * Reference at: https://github.com/mcib3d/mcib3d-core/blob/master/src/main/java/mcib3d/image3d/Segment3DSpots.java
+     *
+     * @param r0     radius inside the center (estimate)
+     * @param r1     radius of the beginning of the background spherical cap
+     * @param r2     radius of the end of the background spherical cap
+     * @param weight weight of the center mean
+     * @return weighted mean which represents the threshold
+     */
     public double getLocalMean(int r0, int r1, int r2, double weight) {
-        double mSpot = Neighborhood.getMean(this, r0, 0);
-        double mBack = Neighborhood.getMean(this, r2, r1);
+        double mSpot = Neighborhood.getMean(this, 0, r0);
+        double mBack = Neighborhood.getMean(this, r1, r2);
 
         return mSpot * weight + (1 - weight) * mBack;
     }
 
+    /**
+     * Find maxima in the entire stack with given radius. Exclude peaks below thresh
+     *
+     * @param radius search radius
+     * @param thresh intensity threshold
+     * @return list of maxima 3D coordinates
+     */
     public ArrayList<int[]> findMaxima(int radius, float thresh) {
         ImageHandler imh = ImageHandler.wrap(this.duplicate());
         int radZ = (int) (radius * getScaleZ());
@@ -186,6 +227,15 @@ public class CellStack extends ImagePlus {
         return peaks;
     }
 
+    /**
+     * Generate all the CellStacks in the given image at the given coordinates
+     *
+     * @param imp    source image
+     * @param seeds  list of seeds
+     * @param dim    dimension of the resulting CellStack
+     * @param scaleZ scale for z axis (1 is isotropic, less otherwise)
+     * @return list of CellStacks
+     */
     public static ArrayList<CellStack> getCellStacksFromSeeds(ImagePlus imp, ArrayList<int[]> seeds, int dim, double scaleZ) {
         ArrayList<CellStack> cellStacks = new ArrayList<>();
         for (int[] seed : seeds) {
@@ -194,19 +244,26 @@ public class CellStack extends ImagePlus {
         return cellStacks;
     }
 
+    /**
+     * Compute the density (in intensity) of the cell in the found radius sphere
+     * Values below threshold are not considered belonging to the cell, thus not counted
+     *
+     * @param thresh threshold value
+     * @return density
+     */
     public double computeDensity(double thresh) {
         //  formula of spheroid volume
         ImageHandler imh = ImageHandler.wrap(this);
 
-        double volume = 4/3. * Math.PI * Math.pow(radius, 3) * scaleZ;
+        double volume = 4 / 3. * Math.PI * Math.pow(radius, 3) * scaleZ;
         int total = 0;
-        int[] values = imh.getNeighborhoodSphere(cellCenter[0], cellCenter[1], cellCenter[2], radius, radius, (float) (radius*scaleZ)).getArrayInt();
+        int[] values = imh.getNeighborhoodSphere(cellCenter[0], cellCenter[1], cellCenter[2], radius, radius, (float) (radius * scaleZ)).getArrayInt();
         for (int i = 0; i < values.length; i++) {
             if (values[i] >= thresh)
                 total += values[i];
         }
 
-        density = total/volume;
+        density = total / volume;
         return density;
     }
 
@@ -216,12 +273,14 @@ public class CellStack extends ImagePlus {
      * @return False if the two opposite vertices of the cube circumscribed to the sphere containing the cell
      */
     public boolean isOnBorder() {
-        int[] vertex1 = new int[] {cellCenter[0] - radius/2, cellCenter[1] - radius/2, cellCenter[2] - (int) (radius*scaleZ/2)};
-        int[] vertex2 = new int[] {cellCenter[0] + radius/2, cellCenter[1] + radius/2, cellCenter[2] + (int) (radius*scaleZ/2)};
+        int[] vertex1 = new int[]{cellCenter[0] - radius / 2, cellCenter[1] - radius / 2, cellCenter[2] - (int) (radius * scaleZ / 2)};
+        int[] vertex2 = new int[]{cellCenter[0] + radius / 2, cellCenter[1] + radius / 2, cellCenter[2] + (int) (radius * scaleZ / 2)};
         boolean expr1 = contains(vertex1);
         boolean expr2 = contains(vertex2);
         return !(expr1 && expr2);
     }
+
+    //    Below some marginal helper method
 
     public List<String> getData() {
         List<String> row = new ArrayList<>();
@@ -233,12 +292,18 @@ public class CellStack extends ImagePlus {
         return row;
     }
 
+    /**
+     * Save the current cell details for being showed in debug mode
+     * Draw a colored circle around the cell with the found radius
+     *
+     * @return CellPreview object
+     */
     public CellPreview savePreview() {
         CellPreview cellPreview = new CellPreview(this.getTitle(),
-                                                this.getImageStack().getProcessor(this.cellCenter[2]+1),
-                                                this.density);
+                this.getImageStack().getProcessor(this.cellCenter[2] + 1),
+                this.density);
         cellPreview.getProcessor().setColor(Color.GREEN);
-        cellPreview.getProcessor().drawOval(cellCenter[0] - radius, cellCenter[1] - radius, radius*2, radius*2);
+        cellPreview.getProcessor().drawOval(cellCenter[0] - radius, cellCenter[1] - radius, radius * 2, radius * 2);
         return cellPreview;
     }
 

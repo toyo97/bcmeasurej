@@ -60,12 +60,18 @@ public class Marker {
         return Marker.readMarker(markerPath, 0);
     }
 
+    /**
+     * Write rows containing 3D coordinates of the center and radius of each cell in a CSV file
+     *
+     * @param markerPath output file path
+     * @param data       rows to be written
+     */
     public static void writeMarker(String markerPath, List<List<String>> data) {
         try {
             FileWriter csvWriter = new FileWriter(markerPath);
             csvWriter.append("x,y,z,r").append("\n");
 
-            for (List<String> row: data){
+            for (List<String> row : data) {
                 csvWriter.append(String.join(",", row));
                 csvWriter.append("\n");
             }

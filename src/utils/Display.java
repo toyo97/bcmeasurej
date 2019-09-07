@@ -16,6 +16,12 @@ import stack.CellStack;
 
 public class Display {
 
+    /**
+     * Apply a different Look Up Table according to the given colorMap name
+     *
+     * @param cellStack cell stack being processed
+     * @param colorMap  name of the color map (can be 'fire')
+     */
     public static void applyLUT(CellStack cellStack, String colorMap) {
         StackStatistics stats = new StackStatistics(cellStack);
 
@@ -28,8 +34,7 @@ public class Display {
             } catch (IOException e) {
                 IJ.error("Cannot open LUT file\nDefault LUT applied");
             }
-        }
-        else
+        } else
             IJ.error("Invalid color map " + colorMap + "\nDefault LUT applied");
     }
 

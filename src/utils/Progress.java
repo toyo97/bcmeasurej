@@ -1,5 +1,8 @@
 package utils;
 
+/**
+ * Provide progress status info: show current image and relative cell being processed
+ */
 public class Progress {
 
     private int imgCount;
@@ -31,7 +34,7 @@ public class Progress {
         this.img = img;
     }
 
-//    SETTER
+    //    SETTER
     public void setImgCount(int imgCount) {
         this.imgCount = imgCount;
     }
@@ -48,7 +51,7 @@ public class Progress {
         this.cellTotal = cellTotal;
     }
 
-//    GETTER
+    //    GETTER
     public int getImgCount() {
         return imgCount;
     }

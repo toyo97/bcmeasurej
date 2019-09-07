@@ -6,6 +6,9 @@ import ij.plugin.Filters3D;
 import ij.plugin.GaussianBlur3D;
 import stack.CellStack;
 
+/**
+ * Main filters which can be applied to the cell before the main process
+ */
 public class Filter {
 
     private static void gaussianIJ(CellStack cellStack, float sigma) {

@@ -22,8 +22,10 @@ import utils.*;
 
 public class Main {
 
-    //  "/home/zemp/bcfind_GT"
-    private static final String SOURCE_DIR = "/home/zemp/IdeaProjects/bcmeasurej/testbatch";
+    //  "/home/zemp/IdeaProjects/bcmeasurej/testbatch"
+    private static final String SOURCE_DIR = "/home/zemp/bcfind_GT";
+    //    TODO add target dir option
+//    private static final String TARGET_DIR = "/home/zemp/bcfind_GT";
     private static final int CUBE_DIM = 70;  // dim of cube as region of interest (ROI) around every cell center
     private static final double SCALE_Z = 0.4;  // approx proportion with xy axis, equals to resZ/resXY
     private static final boolean INVERT_Y = true;
@@ -45,10 +47,9 @@ public class Main {
     private static final double MS_SIGMA = 10;
 
     //  Look-Up-Table (alternatives: fire, default)
-    private static final String COLOR_MAP = "default";
+    private static final String COLOR_MAP = "fire";
 
     //  display params
-    private static final boolean CIRCLE_ROI = true;
     private static final boolean DISCARD_MARGIN_CELLS = true;
     private static final boolean DEBUG = true;
 
@@ -58,7 +59,6 @@ public class Main {
 
     public static void main(String[] args) {
         //  open imagej frame
-
         ImageJ imageJ = new ImageJ();
 
         try {
@@ -69,7 +69,6 @@ public class Main {
                 for (int i = 0; i < cellPreviews.size(); i++) {
                     System.out.println(cellPreviews.get(i).getTitle() + " density: " + cellPreviews.get(i).density);
                 }
-//                cellPreviews.get(0).show();
                 Montage.showRandomMontages(cellPreviews);
             }
 
@@ -77,8 +76,6 @@ public class Main {
         } catch (IOException e) {
             e.printStackTrace();
         }
-//        processImg("/home/zemp/bcfind_GT/SST_11_14.tif");
-
     }
 
     private static void fullProcess() throws IOException {
@@ -99,11 +96,6 @@ public class Main {
 
                     processImg(filePath);
 
-//                Scanner keyboard = new Scanner(System.in);
-//                System.out.println("Press enter to process the next image...\n");
-//                String c = keyboard.nextLine();
-//
-//                IJ.run("Close All");
                 } catch (Exception e) {
                     e.printStackTrace();
                     IJ.error(e.getMessage());
@@ -123,9 +115,6 @@ public class Main {
 
         //  open image
         ImagePlus imp = IJ.openImage(imgPath);
-//        imp.show();
-//        ImageWindow bigW = imp.getWindow();
-//        bigW.setLocationAndSize(1050, 400, 500, 500);
 
         //  read relative csv file rows (coordinates of centers)
         String markerPath = imgPath + ".marker";
@@ -143,13 +132,6 @@ public class Main {
                 progress.stepCell();
                 progress.show();
 
-//                //  identify cell in original image
-//                imp.setSlice(cellStack.getSeed()[2] + 1);
-//                PointRoi point = new PointRoi(cellStack.getSeed()[0], cellStack.getSeed()[1]);
-//                point.setSize(3);
-//                point.setStrokeColor(Color.RED);
-//                imp.setRoi(point);
-
                 if (cellStack.isOnBorder() && DISCARD_MARGIN_CELLS) {
                     IJ.log("Skipped on border cell " + Arrays.toString(cellStack.getCellCenter()));
                 } else {
@@ -165,30 +147,6 @@ public class Main {
                         if (DEBUG) {
                             cellPreviews.add(cellStack.savePreview());
                         }
-
-//
-//
-//                    cellStack.setSlice(cellStack.getCellCenter()[2] + 1);
-//
-//                    if (CIRCLE_ROI)
-//                        Display.circleRoi(cellStack, cellStack.getRadius(), Color.RED);
-//
-//                    //  show cell in a particular area of the display for better visualization
-//                    cellStack.show();
-//                    ImageWindow w = cellStack.getWindow();
-//                    w.setLocationAndSize(1550, 400, 300, 300);
-//
-//                    Scanner keyboard = new Scanner(System.in);
-//                    System.out.println("Press enter to process the next cell or type n to skip to the next image");
-//                    String c = keyboard.nextLine();
-//
-//                    cellStack.close();
-//
-//                    //  type 1 to pass to the next image and skip the remaining cells
-//                    if (c .equals("n")) {
-//                        IJ.log("Skipped remaining cells...");
-//                        break;
-//                    }
 
                     } catch (Exception e) {
                         e.printStackTrace();

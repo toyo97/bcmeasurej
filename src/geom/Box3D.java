@@ -18,11 +18,11 @@ public class Box3D {
      * space in which it must fit
      *
      * @param center 3D coordinates of the center around which will be created the box
-     * @param dim dimension of the cube
+     * @param dim    dimension of the cube
      * @param scaleZ scale for z axis (1 is isotropic, less otherwise)
-     * @param maxW width of the image inside which the box must fit
-     * @param maxH height of the image inside which the box must fit
-     * @param maxD depth of the image inside which the box must fit
+     * @param maxW   width of the image inside which the box must fit
+     * @param maxH   height of the image inside which the box must fit
+     * @param maxD   depth of the image inside which the box must fit
      */
     public Box3D(int[] center, int dim, double scaleZ, int maxW, int maxH, int maxD) {
         this.x0 = Math.max(center[0] - dim / 2, 0);

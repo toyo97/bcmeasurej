@@ -16,6 +16,13 @@ public class MeanShift {
     private double sigma;  // Gaussian kernel parameter
     private double thresh;
 
+    /**
+     * @param cellStack cell stack containing voxels
+     * @param radius    look-distance for mean shift seeds neighbors selection
+     * @param peaks     seeds of the algorithm
+     * @param sigma     gaussian kernel parameter
+     * @param thresh    threshold value below which voxels are not considered
+     */
     public MeanShift(CellStack cellStack, int radius, ArrayList<int[]> peaks, double sigma, double thresh) {
         this.cellStack = cellStack;
         this.radius = radius;
@@ -24,6 +31,14 @@ public class MeanShift {
         this.thresh = thresh;
     }
 
+    /**
+     * Perform mean shift algorithm starting from the peaks to determine the centroid of the cell
+     * This implementation is slightly different from the naive algorithm since mean shift values are also weighted by
+     * voxel intensity (mass of the points).
+     * The kernel used is Gaussian Kernel.
+     *
+     * @return array of shifted 3D coordinates
+     */
     private ArrayList<int[]> runMeanShift() {
         ImageHandler imh = ImageHandler.wrap(cellStack);
 
@@ -77,6 +92,11 @@ public class MeanShift {
         return X;
     }
 
+    /**
+     * Select the correct centroid (of the cell) amongst the centroid found with mean shift
+     *
+     * @return centroid 3D coordinates
+     */
     public int[] getCentroid() {
 
         Point3D center = new Point3D(cellStack.getCellCenter()[0], cellStack.getCellCenter()[1], cellStack.getCellCenter()[2]);
@@ -108,6 +128,13 @@ public class MeanShift {
         return centroids.get(minIdx);
     }
 
+    /**
+     * Compute the gaussian kernel function with the given sigma value
+     * Formula: https://en.wikipedia.org/wiki/Radial_basis_function_kernel
+     *
+     * @param distance euclidean distance between the two points (relatively to the mean shift algorithm)
+     * @return value resulting from the formula
+     */
     private double gaussianKernel(double distance) {
         return (1 / (this.sigma * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow(distance / sigma, 2));
     }
