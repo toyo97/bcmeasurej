@@ -1,10 +1,7 @@
-import algorithm.Neighborhood;
 import ij.IJ;
 import ij.ImageJ;
 import ij.ImagePlus;
-import ij.gui.ImageWindow;
 
-import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -13,11 +10,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import ij.gui.PointRoi;
 import org.apache.commons.io.FilenameUtils;
 
 import algorithm.MeanShift;
@@ -36,11 +31,11 @@ public class Main {
     //  localMean params
     private static final int R0 = 13;
     private static final int R1 = 18;
-    private static final int R2 = 40;
-    private static final double MEAN_WEIGHT = 0.5;  // 0.5 perfect balance, less than 0.5 gives more weight to background values
+    private static final int R2 = 45;
+    private static final double MEAN_WEIGHT = 0.3;  // 0.5 perfect balance, less than 0.5 gives more weight to background values
 
     //  filter params
-    private static final String FILTER = "none";
+    private static final String FILTER = "gauss";
     private static final float FILTER_SIGMA = 2f;
 
     //  3d radial distribution params
@@ -63,6 +58,7 @@ public class Main {
 
     public static void main(String[] args) {
         //  open imagej frame
+
         ImageJ imageJ = new ImageJ();
 
         try {
@@ -74,8 +70,7 @@ public class Main {
                     System.out.println(cellPreviews.get(i).getTitle() + " density: " + cellPreviews.get(i).density);
                 }
 //                cellPreviews.get(0).show();
-                Montage montage = new Montage(cellPreviews);
-                montage.show();
+                Montage.showRandomMontages(cellPreviews);
             }
 
             System.out.println("Done");
@@ -111,15 +106,15 @@ public class Main {
 //                IJ.run("Close All");
                 } catch (Exception e) {
                     e.printStackTrace();
-                    IJ.log(e.getMessage());
+                    IJ.error(e.getMessage());
                 }
             }
         } catch (NoSuchFileException nsfe) {
             nsfe.printStackTrace();
-            IJ.log("Source dir '" + nsfe.getMessage() + "' not valid");
+            IJ.error("Source dir '" + nsfe.getMessage() + "' not valid");
         } catch (Exception e) {
             e.printStackTrace();
-            IJ.log("Unknown error, please check stack trace");
+            IJ.error("Unknown error, please check stack trace");
         }
     }
 
@@ -207,10 +202,10 @@ public class Main {
 
         } catch (IOException e) {
             e.printStackTrace();
-            IJ.log("Error with marker " + markerPath + "\nSkipped");
+            IJ.error("Error with marker " + markerPath + "\nSkipped");
         } catch (NullPointerException npe) {
             npe.printStackTrace();
-            IJ.log("Invalid img path: " + imgPath);
+            IJ.error("Invalid img path: " + imgPath);
         }
     }
 
@@ -219,34 +214,34 @@ public class Main {
         cellStack.setCalibration();
 
         if (!FILTER.equals("none")) {
-            IJ.log("Applying " + FILTER + " 3D filtering");
+            IJ.log("- Applying " + FILTER + " 3D filtering");
             Filter.filterCellStack(cellStack, FILTER, FILTER_SIGMA);
         }
 
-        IJ.log("Computing first radius approximation using local max");
+        IJ.log("- Computing first radius approximation using local max");
         int[] localMax = cellStack.getLocalMaxPos();
-        IJ.log("Local max in " + Arrays.toString(localMax) + ", " +
+        IJ.log("- Local max in " + Arrays.toString(localMax) + ", " +
                 "value: " + cellStack.getVoxel(localMax));
 
         double localMean = cellStack.getLocalMean(R0, R1, R2, MEAN_WEIGHT);
-        IJ.log("Local mean: " + localMean);
+        IJ.log("- Local mean: " + localMean);
 
         int radius = cellStack.computeCellRadius(localMean, MAX_RADIUS);
-        IJ.log("First radius: " + radius);
+        IJ.log("- First radius: " + radius);
 
         ArrayList<int[]> peaks = cellStack.findMaxima(radius / 2, (float) localMean);
 
-        IJ.log("Applying mean shift with peaks found...");
+        IJ.log("- Applying mean shift with peaks found...");
         MeanShift ms = new MeanShift(cellStack, radius, peaks, MS_SIGMA, localMean);
         int[] centroid = ms.getCentroid();
 
         cellStack.setCellCenter(centroid);
-        IJ.log("New center: " + Arrays.toString(centroid));
+        IJ.log("- New center: " + Arrays.toString(centroid));
 
-        double newLocalMean = cellStack.getLocalMean(radius - 2, radius + 2, R2, MEAN_WEIGHT);
+        double newLocalMean = cellStack.getLocalMean(radius - 2, radius + 4, R2, MEAN_WEIGHT);
 
         int newRadius = cellStack.computeCellRadius(newLocalMean, MAX_RADIUS);
-        IJ.log("New radius: " + newRadius);
+        IJ.log("- New radius: " + newRadius);
         cellStack.setRadius(newRadius);
         cellStack.computeDensity(newLocalMean);
     }
