@@ -27,7 +27,7 @@ public class Montage extends ImagePlus {
         for (int i = 0; i < 3; i++) {
             l.add(new ArrayList<>());
         }
-//        total.sort(Comparator.comparing(c -> c.density));
+        Collections.shuffle(total);
         for (CellPreview cp : total) {
             if (cp.density <= 1000) {
                 l.get(0).add(cp);
