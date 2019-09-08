@@ -48,7 +48,7 @@ public class bcmeasure {
             } else
                 logger.writeLogFile(Params.SOURCE_DIR);
 
-            System.out.println("Done");
+            System.out.println("\nDone");
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ParseException exp) {
