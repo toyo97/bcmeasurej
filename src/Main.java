@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FilenameUtils;
 
 import algorithm.MeanShift;
@@ -28,7 +29,7 @@ public class Main {
 //    private static final String TARGET_DIR = "/home/zemp/bcfind_GT";
     private static final int CUBE_DIM = 70;  // dim of cube as region of interest (ROI) around every cell center
     private static final double SCALE_Z = 0.4;  // approx proportion with xy axis, equals to resZ/resXY
-    private static final boolean INVERT_Y = true;
+    private static final boolean INVERT_Y = true;  // if the markers are in graphics coordinate system must be set to true
 
     //  localMean params
     private static final int R0 = 13;
@@ -50,7 +51,7 @@ public class Main {
     private static final String COLOR_MAP = "fire";
 
     //  display params
-    private static final boolean DISCARD_MARGIN_CELLS = true;
+    private static final boolean DISCARD_EDGE_CELLS = true;
     private static final boolean DEBUG = true;
 
     private static Progress progress;
@@ -62,9 +63,11 @@ public class Main {
         ImageJ imageJ = new ImageJ();
 
         try {
+            Params.parse(args);
+
             fullProcess();
 
-            if (DEBUG) {
+            if (Params.DEBUG) {
                 System.out.println("DEBUG: Loading previews");
                 Montage.showRandomMontages(cellPreviews);
             }
@@ -72,11 +75,13 @@ public class Main {
             System.out.println("Done");
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (ParseException exp) {
+            System.err.println( "Parsing failed.  Reason: " + exp.getMessage() );
         }
     }
 
     private static void fullProcess() throws IOException {
-        try (Stream<Path> paths = Files.walk(Paths.get(SOURCE_DIR))) {
+        try (Stream<Path> paths = Files.walk(Paths.get(Params.SOURCE_DIR))) {
             List<String> files = paths
                     .filter(Files::isRegularFile)
                     .filter(p -> p.getFileName().toString().toLowerCase().endsWith(".marker"))
@@ -117,7 +122,7 @@ public class Main {
         String markerPath = imgPath + ".marker";
         ArrayList<int[]> seeds;
         try {
-            if (INVERT_Y)
+            if (Params.INVERT_Y)
                 seeds = Marker.readMarker(markerPath, imp.getHeight());
             else
                 seeds = Marker.readMarker(markerPath);
@@ -125,11 +130,11 @@ public class Main {
             ArrayList<List<String>> rows = new ArrayList<>();
 
             progress.resetCellCount(seeds.size(), Paths.get(imgPath).getFileName().toString());
-            for (CellStack cellStack : CellStack.getCellStacksFromSeeds(imp, seeds, CUBE_DIM, SCALE_Z)) {
+            for (CellStack cellStack : CellStack.getCellStacksFromSeeds(imp, seeds, Params.CUBE_DIM, Params.SCALE_Z)) {
                 progress.stepCell();
                 progress.show();
 
-                if (cellStack.isOnBorder() && DISCARD_MARGIN_CELLS) {
+                if (cellStack.isOnBorder() && Params.DISCARD_EDGE_CELLS) {
                     IJ.log("Skipped on border cell " + Arrays.toString(cellStack.getCellCenter()));
                 } else {
                     try {
@@ -138,10 +143,10 @@ public class Main {
                         rows.add(cellStack.getData());
 
                         //  apply a different LUT for display
-                        if (!COLOR_MAP.equals("default"))
-                            Display.applyLUT(cellStack, COLOR_MAP);
+                        if (!Params.COLOR_MAP.equals("default"))
+                            Display.applyLUT(cellStack, Params.COLOR_MAP);
 
-                        if (DEBUG) {
+                        if (Params.DEBUG) {
                             cellPreviews.add(cellStack.savePreview());
                         }
 
@@ -168,9 +173,9 @@ public class Main {
         IJ.log("Cell at " + Arrays.toString(cellStack.getCellCenter()));
         cellStack.setCalibration();
 
-        if (!FILTER.equals("none")) {
-            IJ.log("- Applying " + FILTER + " 3D filtering");
-            Filter.filterCellStack(cellStack, FILTER, FILTER_SIGMA);
+        if (!Params.FILTER.equals("none")) {
+            IJ.log("- Applying " + Params.FILTER + " 3D filtering");
+            Filter.filterCellStack(cellStack, Params.FILTER, Params.FILTER_SIGMA);
         }
 
         IJ.log("- Computing first radius approximation using local max");
@@ -178,24 +183,24 @@ public class Main {
         IJ.log("- Local max in " + Arrays.toString(localMax) + ", " +
                 "value: " + cellStack.getVoxel(localMax));
 
-        double localMean = cellStack.getLocalMean(R0, R1, R2, MEAN_WEIGHT);
+        double localMean = cellStack.getLocalMean(Params.R0, Params.R1, Params.R2, Params.MEAN_WEIGHT);
         IJ.log("- Local mean: " + localMean);
 
-        int radius = cellStack.computeCellRadius(localMean, MAX_RADIUS);
+        int radius = cellStack.computeCellRadius(localMean, Params.MAX_RADIUS);
         IJ.log("- First radius: " + radius);
 
         ArrayList<int[]> peaks = cellStack.findMaxima(radius / 2, (float) localMean);
 
         IJ.log("- Applying mean shift with peaks found...");
-        MeanShift ms = new MeanShift(cellStack, radius, peaks, MS_SIGMA, localMean);
+        MeanShift ms = new MeanShift(cellStack, radius, peaks, Params.MS_SIGMA, localMean);
         int[] centroid = ms.getCentroid();
 
         cellStack.setCellCenter(centroid);
         IJ.log("- New center: " + Arrays.toString(centroid));
 
-        double newLocalMean = cellStack.getLocalMean(radius - 3, radius + 3, radius + 23, MEAN_WEIGHT);
+        double newLocalMean = cellStack.getLocalMean(radius - 3, radius + 3, radius + 23, Params.MEAN_WEIGHT);
 
-        int newRadius = cellStack.computeCellRadius(newLocalMean, MAX_RADIUS);
+        int newRadius = cellStack.computeCellRadius(newLocalMean, Params.MAX_RADIUS);
         IJ.log("- New radius: " + newRadius);
         cellStack.setRadius(newRadius);
         cellStack.computeDensity(newLocalMean);
