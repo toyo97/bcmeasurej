@@ -109,8 +109,13 @@ public class Params {
             INVERT_Y = false;
         if (line.hasOption("fire"))
             COLOR_MAP = "fire";
-        if (line.hasOption("f"))
-            FILTER = line.getOptionValue("f");
+        if (line.hasOption("f")) {
+            String choice = line.getOptionValue("f");
+            if (choice.equals("mean") || choice.equals("gauss") || choice.equals("median") || choice.equals("none"))
+                FILTER = line.getOptionValue("f");
+            else
+                throw new ParseException("Filter " + choice + " is not valid");
+        }
         if (line.hasOption("dim"))
             CUBE_DIM = Integer.parseInt(line.getOptionValue("dim"));
         if (line.hasOption("z"))
@@ -123,7 +128,7 @@ public class Params {
         SOURCE_DIR = line.getOptionValue("sd");
         File source = new File(SOURCE_DIR);
         if (!source.isDirectory()) {
-            throw new ParseException("source dir is not valid");
+            throw new ParseException("Source dir " + source.toString() + " is not valid");
         }
     }
 }
