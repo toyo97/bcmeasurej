@@ -27,7 +27,6 @@ public class Marker {
     public static ArrayList<int[]> readMarker(String markerPath, int imgHeight) throws IOException {
 
         ArrayList<int[]> rows = new ArrayList<>();
-        IJ.log("Reading marker " + markerPath + "...");
 
         String row;
         BufferedReader csvReader = new BufferedReader(new FileReader(markerPath));
@@ -49,7 +48,6 @@ public class Marker {
             rows.add(coords);
         }
         csvReader.close();
-        IJ.log("Read " + rows.size() + " rows from " + markerPath);
         return rows;
     }
 
@@ -80,7 +78,7 @@ public class Marker {
             csvWriter.close();
         } catch (IOException e) {
             e.printStackTrace();
-            IJ.log("No file written: " + e.getMessage());
+            IJ.error("No file written: " + e.getMessage());
         }
 
     }
