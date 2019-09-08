@@ -43,8 +43,6 @@ public class Filter {
             case "median":
                 medianIJ(cellStack, sigma);
                 break;
-            default:
-                IJ.error("Filter " + method + " not valid\nImage not filtered");
         }
     }
 }
