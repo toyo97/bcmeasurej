@@ -210,6 +210,7 @@ public class CellStack extends ImagePlus {
 
 //        in MaximaFinder thresh is the noise tolerance value
         MaximaFinder mf = new MaximaFinder(imh, radius, radZ, thresh);
+        mf.setVerbose(false);
         ArrayList<Voxel3D> peaksVox = mf.getListPeaks();
 
         ArrayList<int[]> peaks = new ArrayList<>();
