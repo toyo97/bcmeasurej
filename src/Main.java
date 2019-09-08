@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FilenameUtils;
 
@@ -56,27 +57,34 @@ public class Main {
 
     private static Progress progress;
     private static ArrayList<CellPreview> cellPreviews = new ArrayList<>();
+    private static Logger logger;
 
 
     public static void main(String[] args) {
-        //  open imagej frame
-        ImageJ imageJ = new ImageJ();
-
+        //  open imagej frame if debug mode on
         try {
             Params.parse(args);
+
+            logger = new Logger(Params.DEBUG);
+
+            ImageJ imageJ;
+            if (Params.DEBUG)
+                imageJ = new ImageJ();
 
             fullProcess();
 
             if (Params.DEBUG) {
                 System.out.println("DEBUG: Loading previews");
                 Montage.showRandomMontages(cellPreviews);
-            }
+            } else
+                logger.writeLogFile(Params.SOURCE_DIR);
 
             System.out.println("Done");
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ParseException exp) {
             System.err.println( "Parsing failed.  Reason: " + exp.getMessage() );
+            new HelpFormatter().printHelp("commandname [OPTIONS]", Params.options);
         }
     }
 
@@ -113,7 +121,7 @@ public class Main {
     }
 
     private static void processImg(String imgPath) {
-        IJ.log("Processing " + imgPath + "...");
+        logger.log("Processing " + imgPath + "...");
 
         //  open image
         ImagePlus imp = IJ.openImage(imgPath);
@@ -135,7 +143,7 @@ public class Main {
                 progress.show();
 
                 if (cellStack.isOnBorder() && Params.DISCARD_EDGE_CELLS) {
-                    IJ.log("Skipped on border cell " + Arrays.toString(cellStack.getCellCenter()));
+                    logger.log("Skipped on border cell " + Arrays.toString(cellStack.getCellCenter()));
                 } else {
                     try {
                         processCell(cellStack);
@@ -170,38 +178,38 @@ public class Main {
     }
 
     private static void processCell(CellStack cellStack) throws Exception {
-        IJ.log("Cell at " + Arrays.toString(cellStack.getCellCenter()));
+        logger.log("Cell at " + Arrays.toString(cellStack.getCellCenter()));
         cellStack.setCalibration();
 
         if (!Params.FILTER.equals("none")) {
-            IJ.log("- Applying " + Params.FILTER + " 3D filtering");
+            logger.log("- Applying " + Params.FILTER + " 3D filtering");
             Filter.filterCellStack(cellStack, Params.FILTER, Params.FILTER_SIGMA);
         }
 
-        IJ.log("- Computing first radius approximation using local max");
+        logger.log("- Computing first radius approximation using local max");
         int[] localMax = cellStack.getLocalMaxPos();
-        IJ.log("- Local max in " + Arrays.toString(localMax) + ", " +
+        logger.log("- Local max in " + Arrays.toString(localMax) + ", " +
                 "value: " + cellStack.getVoxel(localMax));
 
         double localMean = cellStack.getLocalMean(Params.R0, Params.R1, Params.R2, Params.MEAN_WEIGHT);
-        IJ.log("- Local mean: " + localMean);
+        logger.log("- Local mean: " + localMean);
 
         int radius = cellStack.computeCellRadius(localMean, Params.MAX_RADIUS);
-        IJ.log("- First radius: " + radius);
+        logger.log("- First radius: " + radius);
 
         ArrayList<int[]> peaks = cellStack.findMaxima(radius / 2, (float) localMean);
 
-        IJ.log("- Applying mean shift with peaks found...");
+        logger.log("- Applying mean shift with peaks found...");
         MeanShift ms = new MeanShift(cellStack, radius, peaks, Params.MS_SIGMA, localMean);
         int[] centroid = ms.getCentroid();
 
         cellStack.setCellCenter(centroid);
-        IJ.log("- New center: " + Arrays.toString(centroid));
+        logger.log("- New center: " + Arrays.toString(centroid));
 
         double newLocalMean = cellStack.getLocalMean(radius - 3, radius + 3, radius + 23, Params.MEAN_WEIGHT);
 
         int newRadius = cellStack.computeCellRadius(newLocalMean, Params.MAX_RADIUS);
-        IJ.log("- New radius: " + newRadius);
+        logger.log("- New radius: " + newRadius);
         cellStack.setRadius(newRadius);
         cellStack.computeDensity(newLocalMean);
     }
