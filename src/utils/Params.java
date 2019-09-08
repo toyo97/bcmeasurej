@@ -35,57 +35,58 @@ public class Params {
     //  display params
     public static boolean DISCARD_EDGE_CELLS = true;
     public static boolean DEBUG = false;
+    public static Options options= new Options();
 
     public static void parse(String[] args) throws ParseException {
-        Options options = new Options();
 
-        options.addOption(new Option("d", "debug", false, "enable debug mode"));
-        options.addOption(new Option("ec", "edge-cells", false, "include cells on edges"));
-        options.addOption(new Option("matrix-coord", false,
-                "specifies that the markers follow the matrix coordinate system instead of the graphic c.s."));
+        options.addOption(new Option("d", "debug", false, "Enable debug mode"));
+        options.addOption(new Option("ec", "edge-cells", false, "Include cells on edges"));
+        options.addOption(new Option("mc", "matrix-coord", false,
+                "Apecifies that the markers follow the matrix coordinate system instead of the graphic c.s."));
         options.addOption(new Option("fire", "fire-color-map", false,
-                "apply different color map (LUT) than default"));
+                "Apply different color map (LUT) than default"));
 
         Option filter = Option.builder("f")
                 .longOpt("filter")
                 .hasArg()
                 .argName("filter-name")
-                .desc("apply a filter before processing. Possible values are: gauss, mean, median, none")
+                .desc("Apply a filter before processing. Possible values are: gauss, mean, median, none")
                 .build();
 
         Option dim = Option.builder("dim")
                 .longOpt("cube-dim")
                 .hasArg()
                 .argName("int")
-                .desc("dimension of the cube containing the cell for local operations")
+                .desc("Dimension of the cube containing the cell for local operations")
                 .build();
 
         Option scaleZ = Option.builder("z")
                 .longOpt("scale-z")
                 .hasArg()
                 .argName("float")
-                .desc("scale of the z axis. 1 if isotropic, less otherwise (resZ/resXY)")
+                .desc("Scale of the z axis. 1 if isotropic, less otherwise (resZ/resXY)")
                 .build();
 
         Option meanWeight = Option.builder("mw")
                 .longOpt("local-mean-weight")
                 .hasArg()
                 .argName("int in (0,1)")
-                .desc("give more weight to background (<0.5) or to the cell (>0.5)")
+                .desc("Give more weight to background (<0.5) or to the cell (>0.5)")
                 .build();
 
         Option maxRadius = Option.builder("maxr")
                 .longOpt("max-radius")
                 .hasArg()
                 .argName("int")
-                .desc("maximum radius of the cells")
+                .desc("Maximum radius of the cells")
                 .build();
 
-        Option sourceDir = Option.builder()
+        Option sourceDir = Option.builder("sd")
+                .longOpt("source-dir")
                 .hasArg()
                 .argName("path")
+                .desc("Absolute path of the source directory (for both images and csv files)")
                 .required()
-                .desc("source directory for images and csv files")
                 .build();
 
         options.addOption(filter)
@@ -94,7 +95,6 @@ public class Params {
                 .addOption(meanWeight)
                 .addOption(maxRadius)
                 .addOption(sourceDir);
-
 
         CommandLineParser parser = new DefaultParser();
 
@@ -120,7 +120,7 @@ public class Params {
         if (line.hasOption("maxr"))
             MAX_RADIUS = Integer.parseInt(line.getOptionValue("maxr"));
 
-        SOURCE_DIR = line.getArgs()[0];
+        SOURCE_DIR = line.getOptionValue("sd");
         File source = new File(SOURCE_DIR);
         if (!source.isDirectory()) {
             throw new ParseException("source dir is not valid");
