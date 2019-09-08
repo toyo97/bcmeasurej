@@ -22,38 +22,7 @@ import stack.CellStack;
 import utils.*;
 
 
-public class Main {
-
-    //  "/home/zemp/IdeaProjects/bcmeasurej/testbatch"
-    private static final String SOURCE_DIR = "/home/zemp/bcfind_GT";
-    //    TODO add target dir option
-//    private static final String TARGET_DIR = "/home/zemp/bcfind_GT";
-    private static final int CUBE_DIM = 70;  // dim of cube as region of interest (ROI) around every cell center
-    private static final double SCALE_Z = 0.4;  // approx proportion with xy axis, equals to resZ/resXY
-    private static final boolean INVERT_Y = true;  // if the markers are in graphics coordinate system must be set to true
-
-    //  localMean params
-    private static final int R0 = 13;
-    private static final int R1 = 18;
-    private static final int R2 = 40;
-    private static final double MEAN_WEIGHT = 0.4;  // 0.5 perfect balance, less than 0.5 gives more weight to background values
-
-    //  filter params
-    private static final String FILTER = "none";
-    private static final float FILTER_SIGMA = 2f;
-
-    //  3d radial distribution params
-    private static final int MAX_RADIUS = 40;
-
-    //  MeanShift params
-    private static final double MS_SIGMA = 10;
-
-    //  Look-Up-Table (alternatives: fire, default)
-    private static final String COLOR_MAP = "fire";
-
-    //  display params
-    private static final boolean DISCARD_EDGE_CELLS = true;
-    private static final boolean DEBUG = true;
+public class bcmeasure {
 
     private static Progress progress;
     private static ArrayList<CellPreview> cellPreviews = new ArrayList<>();
@@ -61,12 +30,12 @@ public class Main {
 
 
     public static void main(String[] args) {
-        //  open imagej frame if debug mode on
         try {
             Params.parse(args);
 
             logger = new Logger(Params.DEBUG);
 
+            //  open imagej frame if debug mode on
             ImageJ imageJ;
             if (Params.DEBUG)
                 imageJ = new ImageJ();
