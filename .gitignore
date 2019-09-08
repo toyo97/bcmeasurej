@@ -10,3 +10,8 @@
 /src/stack/CellStack.class
 /out/
 /testbatch/
+/src/utils/CellPreview.class
+/src/utils/Montage.class
+/src/utils/Params.class
+/src/utils/Progress.class
+/src/utils/Logger.class
