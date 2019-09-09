@@ -53,7 +53,7 @@ public class bcmeasure {
             e.printStackTrace();
         } catch (ParseException exp) {
             System.err.println( "Parsing failed.  Reason: " + exp.getMessage() );
-            new HelpFormatter().printHelp("commandname [OPTIONS]", Params.options);
+            new HelpFormatter().printHelp("bcmeasure [OPTIONS]", Params.options);
         }
     }
 
