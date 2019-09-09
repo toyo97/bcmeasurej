@@ -35,7 +35,18 @@ _Example:_
 Marker file:  SST_11_2.tif.marker
 Image file:   SST_11_2.tif
 ```
-Markerfile
+Marker files should have the first line as the header and the x,y,z coordinates as the first 3 columns. Blank lines are not skipped and will raise an error so please check that the files follow this convention
+Decimal coordinates are read correctly but converted to integer values.
+The marker file can have additional columns (which are not considered) but only after x,y,z.
+The separator is a simple comma without space ','.
+_e.g._
+```
+#x, y, z, comment
+20.2,12.1,7.0,
+43.8,123.4,45.0,
+59.7,51.2,100.7,
+...
+```
 
 ## Usage
 After cloning the source with
