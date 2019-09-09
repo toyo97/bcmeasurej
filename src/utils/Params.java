@@ -42,7 +42,7 @@ public class Params {
         options.addOption(new Option("d", "debug", false, "Enable debug mode"));
         options.addOption(new Option("ec", "edge-cells", false, "Include cells on edges"));
         options.addOption(new Option("mc", "matrix-coord", false,
-                "Apecifies that the markers follow the matrix coordinate system instead of the graphic c.s."));
+                "Specifies that the markers follow the matrix coordinate system instead of the graphic c.s."));
         options.addOption(new Option("fire", "fire-color-map", false,
                 "Apply different color map (LUT) than default"));
 
