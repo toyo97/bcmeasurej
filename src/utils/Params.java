@@ -70,7 +70,7 @@ public class Params {
         Option meanWeight = Option.builder("mw")
                 .longOpt("local-mean-weight")
                 .hasArg()
-                .argName("int in (0,1)")
+                .argName("float in (0,1)")
                 .desc("Give more weight to background (<0.5) or to the cell (>0.5)")
                 .build();
 
