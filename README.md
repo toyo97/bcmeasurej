@@ -1,6 +1,9 @@
 # Brain Cell Measure
 _A tool for measuring of radius of brain cells in 3D images_
 
+![3D image animation](https://i.imgur.com/bkA2sbJ.gif)
+![radius](https://i.imgur.com/leBe7eG.png)
+
 1. [Description](#description)
 2. [Requirements](#requirements)
 3. [Usage](#usage)
