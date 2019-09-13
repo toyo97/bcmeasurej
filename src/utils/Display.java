@@ -22,20 +22,24 @@ public class Display {
      * @param cellStack cell stack being processed
      * @param colorMap  name of the color map (can be 'fire')
      */
-    public static void applyLUT(CellStack cellStack, String colorMap) {
+    public static boolean applyLUT(CellStack cellStack, String colorMap) {
         StackStatistics stats = new StackStatistics(cellStack);
 
         if (colorMap.equals("fire")) {
             try {
-                IndexColorModel colorModel = LutLoader.open("luts/fire.lut");
+                IndexColorModel colorModel = LutLoader.open("./../luts/fire.lut");
 
                 LUT lut = new LUT(colorModel, stats.min, stats.max);
                 cellStack.setLut(lut);
             } catch (IOException e) {
                 IJ.error("Cannot open LUT file\nDefault LUT applied");
+                return false;
             }
-        } else
+        } else {
             IJ.error("Invalid color map " + colorMap + "\nDefault LUT applied");
+            return false;
+        }
+        return true;
     }
 
     public static void circleRoi(CellStack cellStack, int r, Color color) {

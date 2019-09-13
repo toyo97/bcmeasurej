@@ -139,8 +139,8 @@ public class bcmeasure {
 
                         //  apply a different LUT for display
                         if (!Params.COLOR_MAP.equals("default"))
-                            Display.applyLUT(cellStack, Params.COLOR_MAP);
-
+                            if (!Display.applyLUT(cellStack, Params.COLOR_MAP))
+                                Params.COLOR_MAP = "default";
                         if (Params.DEBUG) {
                             cellPreviews.add(cellStack.savePreview());
                         }
