@@ -17,7 +17,8 @@ public class Progress {
     }
 
     public void show() {
-        System.out.print("'" + img + "' " + imgCount + "/" + imgTotal + " - cell n. " + cellCount + " of " + cellTotal + "\r");
+        System.out.print("'" + img + "' " + imgCount + "/" + imgTotal + " - cell n. " + cellCount + " of " + cellTotal +
+                "                 \r");
     }
 
     public void stepImg() {
