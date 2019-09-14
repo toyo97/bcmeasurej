@@ -10,10 +10,32 @@ public class Logger {
 
     private boolean verbose;
     private ArrayList<String> logs;
+    private static Logger logger;
 
-    public Logger(boolean verbose) {
+    /**
+     * Singleton for custom logger.
+     *
+     * @param verbose If set to true, the class will use IJ.log() as logging tool, otherwise it will simply
+     *                save the messages in a txt file at the end of the execution
+     */
+    private Logger(boolean verbose) {
         this.verbose = verbose;
         logs = new ArrayList<>();
+    }
+
+    public static Logger getInstance(boolean verbose) {
+        if (logger == null) {
+            logger = new Logger(verbose);
+        }
+        return logger;
+    }
+
+    public static Logger getInstance() {
+        if (logger == null) {
+            logger = new Logger(true);
+            logger.log("Verbose parameter not given, set default verbose mode.");
+        }
+        return logger;
     }
 
     public void log(String message) {

@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import utils.Logger;
+
 public class Marker {
 
     private static String invertY(String y, int height) {
@@ -33,19 +35,23 @@ public class Marker {
         //  skip header
         String header = csvReader.readLine();
         while ((row = csvReader.readLine()) != null) {
-            String[] data = row.split(",");
+            try {
+                String[] data = row.split(",");
 
-            //  y inversion
-            if (imgHeight > 0) {
-                data[1] = invertY(data[1], imgHeight);
-            }
+                //  y inversion
+                if (imgHeight > 0) {
+                    data[1] = invertY(data[1], imgHeight);
+                }
 
-            //  takes only the x,y,z coordinates and convert them to int values
-            int[] coords = new int[3];
-            for (int i = 0; i < 3; i++) {
-                coords[i] = (int) Float.parseFloat(data[i]);
+                //  takes only the x,y,z coordinates and convert them to int values
+                int[] coords = new int[3];
+                for (int i = 0; i < 3; i++) {
+                    coords[i] = (int) Float.parseFloat(data[i]);
+                }
+                rows.add(coords);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                Logger.getInstance().log("Skipped invalid line in marker " + markerPath);
             }
-            rows.add(coords);
         }
         csvReader.close();
         return rows;

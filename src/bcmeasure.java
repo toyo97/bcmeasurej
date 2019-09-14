@@ -51,7 +51,7 @@ public class bcmeasure {
         try {
             Params.parse(args);
 
-            logger = new Logger(Params.DEBUG);
+            logger = Logger.getInstance(Params.DEBUG);
 
             //  open imagej frame if debug mode on
             ImageJ imageJ;
