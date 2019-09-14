@@ -38,6 +38,9 @@ public class Marker {
             try {
                 String[] data = row.split(",");
 
+                if (data.length < 3)
+                    throw new ArrayIndexOutOfBoundsException();
+
                 //  y inversion
                 if (imgHeight > 0) {
                     data[1] = invertY(data[1], imgHeight);
