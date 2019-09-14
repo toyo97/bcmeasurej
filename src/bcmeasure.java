@@ -62,7 +62,7 @@ public class bcmeasure {
 
             if (Params.DEBUG) {
                 System.out.println("DEBUG: Loading previews");
-                Montage.showRandomMontages(cellPreviews);
+                Montage.showRandomMontages(cellPreviews, Params.CUBE_DIM);
             } else
                 logger.writeLogFile(Params.SOURCE_DIR);
 

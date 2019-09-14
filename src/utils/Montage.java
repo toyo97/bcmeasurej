@@ -12,9 +12,8 @@ public class Montage extends ImagePlus {
      *
      * @param imgs list of images
      */
-    public Montage(List<CellPreview> imgs) {
+    public Montage(List<CellPreview> imgs, int dim) {
         super();
-        int dim = imgs.get(0).getWidth();
         int n = (int) Math.ceil(Math.sqrt(imgs.size()));
         this.setProcessor(new ColorProcessor(dim * n, dim * n));
         for (int i = 0; i < imgs.size(); i++) {
@@ -22,7 +21,7 @@ public class Montage extends ImagePlus {
         }
     }
 
-    public static void showRandomMontages(ArrayList<CellPreview> total) {
+    public static void showRandomMontages(ArrayList<CellPreview> total, int dim) {
         ArrayList<ArrayList<CellPreview>> l = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
             l.add(new ArrayList<>());
@@ -39,7 +38,7 @@ public class Montage extends ImagePlus {
         }
 
         for (int i = 0; i < l.size(); i++) {
-            Montage m = new Montage(l.get(i).subList(0, Math.min(100, l.get(i).size())));
+            Montage m = new Montage(l.get(i).subList(0, Math.min(100, l.get(i).size())), dim);
             String title;
             if (i == 0) {
                 title = "Low density";
