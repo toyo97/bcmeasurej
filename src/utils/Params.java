@@ -10,7 +10,7 @@ public class Params {
     public static String SOURCE_DIR = "";
     //    private static final String TARGET_DIR = "/home/zemp/bcfind_GT";
     public static int CUBE_DIM = 70;  // dim of cube as region of interest (ROI) around every cell center
-    public static double SCALE_Z = 0.4;  // approx proportion with xy axis, equals to resZ/resXY
+    public static double SCALE_Z = 0.33;  // approx proportion with xy axis, equals to resZ/resXY
     public static boolean INVERT_Y = true;  // if the markers are in graphics coordinate system must be set to true
 
     //  localMean params
