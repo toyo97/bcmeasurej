@@ -83,10 +83,10 @@ usage: bcmeasure [OPTIONS]
  -maxr,--max-radius <int>                   Maximum radius of the cells
           default: 40
           
- -mc,--matrix-coord                         Specifies that the markers
+ -mc,--matrix-coord                         Specify that the markers
                                             follow the matrix coordinate
                                             system instead of the graphic
-                                            c.s.
+                                            c.s. (1)
                                             
  -mw,--local-mean-weight <float in (0,1)>   Give more weight to background
           default: 0.4                      (<0.5) or to the cell (>0.5)
@@ -96,9 +96,10 @@ usage: bcmeasure [OPTIONS]
                                             csv files)
                                             
  -z,--scale-z <float>                       Scale of the z axis. 1 if
-          default: 0.4                      isotropic, less otherwise
+          default: 0.33                     isotropic, less otherwise
                                             (resZ/resXY)
 ```
+(1): The tool is programmed to handle by default graphic coordinates in marker files (from bottom-left to top-right). However if the 3D coordinates follow the matrix coordinate system convention (from top-left to bottom-right) you just have to launch the tool with ``-mc`` option. For more information about the image coordinate system please refer to [this page](http://support.wolfram.com/kb/25330).
 
 _Examples:_
 ```bash
