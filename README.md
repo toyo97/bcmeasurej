@@ -6,7 +6,8 @@
 1. [Description](#description)
 2. [Requirements](#requirements)
 3. [Usage](#usage)
-    1. [Options](#options)
+    1. [Output](#output)
+    2. [Options](#options) 
 4. [Sources](#sources)
 
 ## Description
@@ -27,9 +28,9 @@ It uses therefore [ImageJ API](https://imagej.nih.gov/ij/developer/api/overview-
 such as [3D ImageJ Suite core library](https://imagejdocu.tudor.lu/doku.php?id=plugin:stacks:3d_ij_suite:start).
 
 ## Requirements
-The tool requires a path to a directory in which are stored .tif images and the relative marker file with the seed 3D coordinates 
-(which must have the same name).
-_Example:_
+The tool requires a path to a directory in which are stored .tif images and the relative marker file with the seed 3D coordinates (which must have the same name).
+
+_e.g._
 ```
 Marker file:  SST_11_2.tif.marker
 Image file:   SST_11_2.tif
@@ -38,6 +39,7 @@ Marker files should have the first line as the header and the x,y,z coordinates 
 Decimal coordinates are read correctly but converted to integer values.
 The marker file can have additional columns (which are not considered) but only after x,y,z.
 The separator is a simple comma without space ','.
+
 _e.g._
 ```
 #x, y, z, comment
@@ -61,6 +63,25 @@ then run the script specifying the source directory with the option ```-sd```
 ```bash
 $ java -cp ../lib/*:. bcmeasure -sd /home/user/path/to/source/files
 ```
+### Output
+The output of the execution is just a new marker file, which is a CSV file with 4 columns.
+
+_e.g._
+```
+#x, y, z, r
+20.2,12.1,7.0,13
+43.8,123.4,45.0,14
+59.7,51.2,100.7,17
+...
+```
+The name of this new file differs from the original marker from a ``[RAD]`` label.
+
+_e.g._
+```
+Original marker file:   SST_11_1.tif.marker
+Output marker file:     SST_11_1.tif[RAD].marker
+```
+
 ### Options
 You can also set some parameters with the following options:
 ```
