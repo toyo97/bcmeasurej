@@ -89,6 +89,33 @@ public class Marker {
             e.printStackTrace();
             IJ.error("No file written: " + e.getMessage());
         }
+    }
 
+    public static ArrayList<int[]> readRadMarker(String markerPath) throws IOException {
+        ArrayList<int[]> rows = new ArrayList<>();
+
+        String row;
+        BufferedReader csvReader = new BufferedReader(new FileReader(markerPath));
+        //  skip header
+        String header = csvReader.readLine();
+        while ((row = csvReader.readLine()) != null) {
+            try {
+                String[] data = row.split(",");
+
+                if (data.length < 4)
+                    throw new ArrayIndexOutOfBoundsException();
+
+                //  takes only the x,y,z coordinates and radius and convert them to int values
+                int[] res = new int[4];
+                for (int i = 0; i < 4; i++) {
+                    res[i] = (int) Float.parseFloat(data[i]);
+                }
+                rows.add(res);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                e.printStackTrace();
+            }
+        }
+        csvReader.close();
+        return rows;
     }
 }
