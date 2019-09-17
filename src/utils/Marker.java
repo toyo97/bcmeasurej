@@ -76,7 +76,7 @@ public class Marker {
     public static void writeMarker(String markerPath, List<List<String>> data) {
         try {
             FileWriter csvWriter = new FileWriter(markerPath);
-            csvWriter.append("x,y,z,r").append("\n");
+            csvWriter.append("x,y,z,r,seed").append("\n");
 
             for (List<String> row : data) {
                 csvWriter.append(String.join(",", row));
