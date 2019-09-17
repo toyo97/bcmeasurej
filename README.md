@@ -64,14 +64,15 @@ then run the script specifying the source directory with the option ```-sd```
 $ java -cp ../lib/*:. bcmeasure -sd /home/user/path/to/source/files
 ```
 ### Output
-The output of the execution is just a new marker file, which is a CSV file with 4 columns.
+The output of the execution is just a new marker file, which is a CSV file with 5 columns (the last one
+contains the original seed coordinates).
 
 _e.g._
 ```
-#x, y, z, r
-20.2,12.1,7.0,13
-43.8,123.4,45.0,14
-59.7,51.2,100.7,17
+#x, y, z, r, seed
+20,12,7,13,[18.5,14.1,7.1]
+43,123,45,14,[41.2,123.5,46.0]
+59,51,100,17,[61,53,99]
 ...
 ```
 The name of this new file differs from the original marker from a ``[RAD]`` label.
