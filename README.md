@@ -7,7 +7,8 @@
 2. [Requirements](#requirements)
 3. [Usage](#usage)
     1. [Output](#output)
-    2. [Options](#options) 
+    2. [Options](#options)
+    3. [Check](#check)
 4. [Sources](#sources)
 
 ## Description
@@ -134,6 +135,23 @@ $ java -cp ../lib/*:. bcmeasure -sd /home/user/path/to/source/files -ec -f gauss
 ```
 With this command the tool will include cells that are on the edges (XYZ) of the stack. The resulting radius might be less precise.
 Then a 3D gaussian blur filter will be applied before radius determination process.
+
+### Check
+After running _bcmeasure_ script you can visualize the results on a specified image compiling 
+and running _bcdraw_ script:
+```bash
+$ javac -cp ../lib/*:. bcdraw.java; java -cp ../lib/*:. bcdraw /home/user/path/to/image
+```
+You must pass the desired image path as the one and only argument.
+The script will open a TIFF image identical to the original but with overlaying drawings on it:
++ The red points represent the manually annotated center originally given along with the image
++ The green points are the result of the mean shift algorithm, _i.e._ the new centers
++ The orange circles are the cross sections of the spheres obtained from the radius found
+
+In addition the script will also print the mean of the radiuses of the cells in the image and
+the mean of the distances between the old and the new center.
+
+![Example of output](https://i.imgur.com/RhJwzDn.png)
 
 ## Sources
 Documentation for the code was mainly found here:
