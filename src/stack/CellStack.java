@@ -290,7 +290,9 @@ public class CellStack extends ImagePlus {
         row.add(Integer.toString(absoluteCenter[1]));
         row.add(Integer.toString(absoluteCenter[2]));
         row.add(Integer.toString(radius));
-        row.add(Arrays.toString(seed));
+        row.add(Integer.toString(seed[0]));
+        row.add(Integer.toString(seed[1]));
+        row.add(Integer.toString(seed[2]));
         return row;
     }
 
