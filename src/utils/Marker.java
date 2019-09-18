@@ -76,7 +76,7 @@ public class Marker {
     public static void writeMarker(String markerPath, List<List<String>> data) {
         try {
             FileWriter csvWriter = new FileWriter(markerPath);
-            csvWriter.append("x,y,z,r,oldx,oldy,oldz").append("\n");
+            csvWriter.append("#x,y,z,r,oldx,oldy,oldz").append("\n");
 
             for (List<String> row : data) {
                 csvWriter.append(String.join(",", row));
@@ -102,12 +102,12 @@ public class Marker {
             try {
                 String[] data = row.split(",");
 
-                if (data.length < 4)
+                if (data.length < 7)
                     throw new ArrayIndexOutOfBoundsException();
 
                 //  takes only the x,y,z coordinates and radius and convert them to int values
-                int[] res = new int[4];
-                for (int i = 0; i < 4; i++) {
+                int[] res = new int[7];
+                for (int i = 0; i < 7; i++) {
                     res[i] = (int) Float.parseFloat(data[i]);
                 }
                 rows.add(res);

@@ -21,7 +21,9 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.OvalRoi;
 import ij.gui.Overlay;
+import ij.gui.PointRoi;
 import ij.process.ImageProcessor;
+import mcib3d.geom.Point3D;
 import utils.Marker;
 
 import java.awt.*;
@@ -50,21 +52,56 @@ public class bcdraw {
                 int R = cellData[3];
                 int scaledR = (int) R/3;
 
+                PointRoi newCenter = new PointRoi(x, y);
+                newCenter.setPosition(slicePos + 1);
+                newCenter.setSize(3);
+                newCenter.setStrokeColor(new Color(0, 255, 0));
+
+                PointRoi oldCenter = new PointRoi(cellData[4], cellData[5]);
+                oldCenter.setPosition(cellData[6]+1);
+                oldCenter.setSize(3);
+                oldCenter.setStrokeColor(new Color(255, 0, 0));
+
+                overlay.add(newCenter);
+                overlay.add(oldCenter);
+
                 for (int i = -scaledR -1; i < scaledR + 1; i++) {
                     //  radius of cross section at distance i from center
                     int r = (int) Math.sqrt(R*R - Math.pow(i*3, 2));
                     OvalRoi roi = new OvalRoi(x-r, y-r, 2*r, 2*r);
                     roi.setPosition(slicePos+i);
+                    roi.setFillColor(new Color(255,127,0,102));
+                    roi.setStrokeWidth(.0);
                     overlay.add(roi);
                 }
             }
             ImageJ ij = new ImageJ();
-            overlay.setFillColor(new Color(255,127,0,102));
-            overlay.setStrokeWidth(.0);
             original.setOverlay(overlay);
             original.show();
+
+            printStats(cellsData);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static void printStats(ArrayList<int[]> cellsData) {
+        double meanDistance = 0;
+        double meanRadius = 0;
+        int count = 0;
+
+        for (int[] cellData: cellsData) {
+            Point3D newCenter = new Point3D(cellData[0], cellData[1], cellData[2]);
+            Point3D oldCenter = new Point3D(cellData[4], cellData[5], cellData[6]);
+            meanDistance += newCenter.distance(oldCenter, 1, .33);
+            meanRadius += cellData[3];
+            count++;
+        }
+
+        meanDistance /= count;
+        meanRadius /= count;
+
+        IJ.log("Mean distance: " + Double.toString(meanDistance));
+        IJ.log("Mean radius: " + Double.toString(meanRadius));
     }
 }
