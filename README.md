@@ -8,11 +8,12 @@
 3. [Usage](#usage)
     1. [Output](#output)
     2. [Options](#options)
-    3. [Check](#check)
+    3. [Results](#results)
 4. [Sources](#sources)
+5. [References](#references)
 
 ## Description
-Brain Cell Measure is a tool for automated determination of radius of cells (at given coordinates) in 3D mouse brain images acquired by 
+BCMeasure is a tool for automated determination of radius of cells (at given coordinates) in 3D mouse brain images acquired by 
 confocal light sheet microscopy.
 It processes every cell listed in the marker files firstly applying adaptive thresholding to find an estimate of the radius 
 around the seed (which may be not properly centered) and then using this estimate to apply [mean shift](https://en.wikipedia.org/wiki/Mean_shift)
@@ -136,7 +137,7 @@ $ java -cp ../lib/*:. bcmeasure -sd /home/user/path/to/source/files -ec -f gauss
 With this command the tool will include cells that are on the edges (XYZ) of the stack. The resulting radius might be less precise.
 Then a 3D gaussian blur filter will be applied before radius determination process.
 
-### Check
+### Results
 After running _bcmeasure_ script you can visualize the results on a specified image compiling 
 and running _bcdraw_ script:
 ```bash
@@ -159,3 +160,6 @@ Documentation for the code was mainly found here:
 - [ImageJ API](https://imagej.nih.gov/ij/developer/api/)
 - [mcib3d-core library](https://github.com/mcib3d/mcib3d-core) (Thomas Boudier, Jean Ollion)
 - [bcfind](https://github.com/paolo-f/bcfind)
+
+## References
+This project has been developed as a thesis job for the Bachelor Degree in Computer Engineering at the University of Florence. I would like to thank professor Paolo Frasconi for the assistance and the supervision provided throughout the development phase.
