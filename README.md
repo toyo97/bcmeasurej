@@ -18,8 +18,7 @@ confocal light sheet microscopy.
 It processes every cell listed in the marker files firstly applying adaptive thresholding to find an estimate of the radius 
 around the seed (which may be not properly centered) and then using this estimate to apply [mean shift](https://en.wikipedia.org/wiki/Mean_shift)
 algorithm to obtain a more accurate centroid. Finally another threshold is re-evaluated and applied again to the 3D radial distribution (this time
-around the centroid) for the final radius measurement. For more details please see the [full report](#)
-_(coming soon)_
+around the centroid) for the final radius measurement. For more details please see the [full report](https://github.com/toyo97/bcmeasurej/blob/master/Report%20%5BBachelor%20Thesis%5D.pdf).
 
 After launching the script, it will search for every marker file in the source folder (walking in every subfolder) and then
 sequentially process every pointed cell on the relative image stack. Then it will create another marker file (CSV) with the updated coordinates
